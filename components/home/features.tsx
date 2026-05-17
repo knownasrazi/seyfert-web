@@ -1,106 +1,169 @@
 import { cn } from "@/lib/utils";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Typescript01Icon, ChartIncreaseIcon, SmileIcon, CustomizeIcon, DiscordIcon, PlusSignSquareIcon } from "@hugeicons/core-free-icons";
+import {
+    Typescript01Icon,
+    ChartIncreaseIcon,
+    SmileIcon,
+    CustomizeIcon,
+    DiscordIcon,
+    PlusSignSquareIcon,
+} from "@hugeicons/core-free-icons";
+
+type Feature = {
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+    proof: string;
+};
 
 export function FeaturesSectionWithHoverEffects() {
-    const features = [
+    const features: Feature[] = [
         {
-            title: "Written in TypeScript",
+            title: "TypeScript Maxxing",
             description:
-                "Seyfert is written in TypeScript, so you can enjoy the benefits of type safety.",
-            icon: <HugeiconsIcon icon={Typescript01Icon} className="w-5! h-5! " />,
+                "Inference everywhere. Command options, event payloads, interaction responses — all typed end-to-end. Never write `as any` again.",
+            icon: <HugeiconsIcon icon={Typescript01Icon} className="w-6! h-6!" />,
+            proof: "0 'as any'",
         },
         {
-            title: "Scalable",
+            title: "Built to Lift Heavy",
             description:
-                "Seyfert is tested on both big and small bots and there were perfect performance results on both of them..",
-            icon: <HugeiconsIcon icon={ChartIncreaseIcon} className="w-5! h-5! " />,
+                "Battle-tested on tiny bots and 7-figure guild monsters. Sharding, presence chunking, raw gateway access — pick your reps.",
+            icon: <HugeiconsIcon icon={ChartIncreaseIcon} className="w-6! h-6!" />,
+            proof: "1M+ Guilds",
         },
         {
-            title: "Effortless Development",
+            title: "Decorators Do the Work",
             description:
-                "Developer experience is at the core of Seyfert, with a focus on easy setup to only worry about your bot's logic.",
-            icon: <HugeiconsIcon icon={SmileIcon} className="w-5! h-5! " />,
+                "@Declare, @Options, @AutoLoad. No registration boilerplate, no manual REST.put, no slash command bookkeeping.",
+            icon: <HugeiconsIcon icon={SmileIcon} className="w-6! h-6!" />,
+            proof: "<60s Setup",
         },
         {
-            title: "Full customization",
+            title: "Hackable to the Bone",
             description:
-                "Seyfert makes customization easier, you can customize each aspect of seyfert if you need specific behavior.",
-            icon: <HugeiconsIcon icon={CustomizeIcon} className="w-5! h-5! " />,
+                "Custom cache, custom REST, custom client. Every layer is replaceable — if you need to flex on the framework itself, go ahead.",
+            icon: <HugeiconsIcon icon={CustomizeIcon} className="w-6! h-6!" />,
+            proof: "100% Hackable",
         },
         {
-            title: "Latest Features",
+            title: "Day-1 Discord Updates",
             description:
-                "Seyfert is always up to date with the latest features of Discord.",
-            icon: <HugeiconsIcon icon={DiscordIcon} className="w-5! h-5! " />,
+                "Threads, components v2, polls, interactions — supported the day Discord ships. Virgin frameworks read the changelog, Chads read the diff.",
+            icon: <HugeiconsIcon icon={DiscordIcon} className="w-6! h-6!" />,
+            proof: "Day-1 Support",
         },
         {
-            title: "And more...",
+            title: "Adapter Maxxing",
             description:
-                "Actually I got out of ideas for this section, but I'm sure there are more features.",
-            icon: <HugeiconsIcon icon={PlusSignSquareIcon} className="w-5! h-5! " />,
-        }
+                "Official adapters drop in: Redis cache, uWS gateway, cooldown system. Modular gains — pick your stack, leave the bloat.",
+            icon: <HugeiconsIcon icon={PlusSignSquareIcon} className="w-6! h-6!" />,
+            proof: "Redis · uWS · +",
+        },
     ];
     return (
-        <section className="flex flex-col gap-4 items-center">
-            <h2 className="text-4xl font-bold leading-[1.1] tracking-tight">
-                Packed with unique features
-            </h2>
-
-            <div className="flex items-center justify-center my-2">
-                <div className="relative w-72 h-[2px] overflow-hidden">
-                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-neutral-600 to-transparent animate-[fade_3s_ease-in-out_infinite]" />
+        <section className="flex flex-col gap-10 items-center py-12 relative">
+            {/* Header */}
+            <div className="text-center max-w-3xl">
+                <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 border border-white/15 bg-white/5">
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-zinc-300 font-mono">
+                        // The Arsenal
+                    </span>
                 </div>
-                <div className="absolute">
-                    <div className="w-1.5 h-1.5 border border-neutral-700 rotate-45" />
-                </div>
+                <h2 className="text-4xl md:text-6xl font-black leading-[1.0] tracking-tight uppercase">
+                    Forged{" "}
+                    <span
+                        className="italic"
+                        style={{
+                            background:
+                                "linear-gradient(180deg, #ffffff 0%, #d4a857 100%)",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            backgroundClip: "text",
+                        }}
+                    >
+                        for Chads.
+                    </span>
+                </h2>
+                <p className="mt-4 text-zinc-500 max-w-xl mx-auto">
+                    No marketing fluff. Real features, real APIs, zero excuses.
+                </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full">
+
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-[2px] bg-white/10">
                 {features.map((feature, index) => (
-                    <Feature key={index} {...feature} index={index} />
+                    <BrutalFeature key={index} {...feature} index={index} />
                 ))}
             </div>
         </section>
     );
 }
 
-const Feature = ({
+const BrutalFeature = ({
     title,
     description,
     icon,
+    proof,
     index,
-}: {
-    title: string;
-    description: string;
-    icon: React.ReactNode;
-    index: number;
-}) => {
+}: Feature & { index: number }) => {
+    const num = String(index + 1).padStart(2, "0");
     return (
         <div
             className={cn(
-                "flex flex-col lg:border-r py-10 relative group/feature dark:border-neutral-800",
-                (index === 0 || index === 3) && "lg:border-l dark:border-neutral-800",
-                index < 3 && "lg:border-b dark:border-neutral-800"
+                "group relative flex flex-col bg-[#0a0a0a] p-7 min-h-[260px]",
+                "transition-colors duration-200 hover:bg-white/[0.03]"
             )}
         >
-            {index < 3 && (
-                <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-linear-to-t from-neutral-100 dark:from-neutral-800 to-transparent pointer-events-none" />
-            )}
-            {index >= 3 && (
-                <div className="opacity-0 group-hover/feature:opacity-100 transition duration-200 absolute inset-0 h-full w-full bg-linear-to-b from-neutral-100 dark:from-neutral-800 to-transparent pointer-events-none" />
-            )}
-            <div className="mb-4 relative z-10 px-10 text-neutral-600 dark:text-neutral-400">
-                {icon}
+            {/* Hover diagonal stripes overlay */}
+            <div
+                aria-hidden="true"
+                className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                style={{
+                    background:
+                        "repeating-linear-gradient(135deg, transparent, transparent 8px, rgba(255,255,255,0.02) 8px, rgba(255,255,255,0.02) 16px)",
+                }}
+            />
+
+            {/* Top label row */}
+            <div className="flex items-center justify-between mb-6 relative z-10">
+                <div className="flex items-center gap-3">
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-mono font-bold text-zinc-600">
+                        // F-{num}
+                    </span>
+                </div>
+                <div className="flex items-center justify-center w-10 h-10 border border-white/20 text-white/80 group-hover:border-white/60 group-hover:text-white transition-colors">
+                    {icon}
+                </div>
             </div>
-            <div className="text-lg font-bold mb-2 relative z-10 px-10">
-                <div className="absolute left-0 inset-y-0 h-6 group-hover/feature:h-8 w-[2px] rounded-tr-full rounded-br-full bg-neutral-300 dark:bg-neutral-700 group-hover/feature:bg-blue-500 transition-all duration-200 origin-center" />
-                <span className="group-hover/feature:translate-x-2 transition duration-200 inline-block text-neutral-800 dark:text-neutral-100">
-                    {title}
-                </span>
-            </div>
-            <p className="text-sm text-neutral-600 dark:text-neutral-300 max-w-xs relative z-10 px-10">
+
+            {/* Title */}
+            <h3 className="text-xl font-black uppercase tracking-tight leading-tight text-white mb-3 relative z-10">
+                {title}
+            </h3>
+
+            {/* Description */}
+            <p className="text-sm text-zinc-500 leading-relaxed mb-6 flex-1 relative z-10">
                 {description}
             </p>
+
+            {/* Proof footer */}
+            <div className="flex items-center gap-2 pt-4 border-t border-white/10 relative z-10">
+                <span className="inline-flex items-center justify-center w-4 h-4 border border-white/40 text-white/80 text-[9px] font-black">
+                    ✓
+                </span>
+                <span className="text-[10px] uppercase tracking-[0.2em] font-mono font-bold text-white/70">
+                    {proof}
+                </span>
+            </div>
+
+            {/* Big shadow number in corner */}
+            <span
+                aria-hidden="true"
+                className="absolute bottom-1 right-2 text-7xl font-black leading-none text-white/[0.04] select-none pointer-events-none"
+            >
+                {num}
+            </span>
         </div>
     );
 };

@@ -24,15 +24,17 @@ export const metadata: Metadata = {
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <HomeLayout
-      {...baseOptions}
-      nav={{
-        enabled: true,
-        component: <Navbar />,
-      }}
-      className={`${poppins.className} py-0`}
-    >
-      {children}
-    </HomeLayout>
+    <div className="dark bg-background text-foreground min-h-screen">
+      <HomeLayout
+        {...baseOptions}
+        nav={{
+          enabled: true,
+          component: <Navbar />,
+        }}
+        className={`${poppins.className} py-0`}
+      >
+        {children}
+      </HomeLayout>
+    </div>
   );
 }

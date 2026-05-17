@@ -59,7 +59,7 @@ const usedByEntries: Array<{
                 handle: "@Kenium#9090",
                 avatar: "/bots/kenium.png"
             },
-            text: "Open source music bot with multiple sources and free playlists. After developing on discord.js for all my projects, Seyfert provided every feature I wanted to develop a bot, while being the most resource-efficient I ever used, loved this project :D !!! "
+            text: "Open source music bot with multiple sources and free playlists. After developing on that library that ends in .js for all my projects, Seyfert provided every feature I wanted to develop a bot, while being the most resource-efficient I ever used, loved this project :D !!! "
         },
         {
             author: {
@@ -67,28 +67,37 @@ const usedByEntries: Array<{
                 handle: "@Lumi#4731",
                 avatar: "/bots/lumi.png"
             },
-            text: "Lumi is a multi-funcion bot, designed to allow users to use features that would need multiple bots to do, developed with Seyfert for max optimization. I decided to change from discord.js to Seyfert because of it's optimizations and non-ram eating implementation. Would likely say to my friends to use it aswell!"
+            text: "Lumi is a multi-funcion bot, designed to allow users to use features that would need multiple bots to do, developed with Seyfert for max optimization. I decided to change from that library that ends in .js to Seyfert because of it's optimizations and non-ram eating implementation. Would likely say to my friends to use it aswell!"
         },
     ]
 
 export function UsedBySection() {
     return (
-        <section className="flex flex-col items-center text-center py-4">
-            <div className="text-center">
-                <h2 className="text-4xl font-bold leading-[1.1] tracking-tight">
-                    Who is using Seyfert?
-                </h2>
-                <p className="mt-2 text-base leading-relaxed text-neutral-400">
-                    Below are some of the bots that are using Seyfert (you can add your bot to the list by opening a PR).
-                </p>
-                <div className="flex items-center justify-center gap-3 my-8">
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                    {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-1.5 w-1.5 rounded-full bg-white/40 animate-pulse"
-                            style={{ animationDelay: `${i * 200}ms` }} />
-                    ))}
-                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <section className="flex flex-col items-center text-center py-12 gap-10">
+            <div className="text-center max-w-3xl">
+                <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 border border-white/15 bg-white/5">
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-zinc-300 font-mono">
+                        // The Hall of Gains
+                    </span>
                 </div>
+                <h2 className="text-4xl md:text-6xl font-black leading-[1.0] tracking-tight uppercase">
+                    Bots Built by{" "}
+                    <span
+                        className="italic"
+                        style={{
+                            background:
+                                "linear-gradient(180deg, #ffffff 0%, #b0b0b0 100%)",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            backgroundClip: "text",
+                        }}
+                    >
+                        Chads.
+                    </span>
+                </h2>
+                <p className="mt-4 text-zinc-500 max-w-xl mx-auto">
+                    These bots run on pure Chad energy. Open a PR to flex your bot in the hall of fame.
+                </p>
             </div>
 
             <div className="relative flex w-full flex-col items-center justify-center overflow-hidden">

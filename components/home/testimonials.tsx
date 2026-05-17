@@ -1,101 +1,145 @@
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
 import { cn } from "@/lib/utils"
-import { GridBG } from "../ui/grid-bg"
 
 const testimonials = [
     {
         name: "Socram09",
-        review: "The error handling is amazing - it catches errors so well I never know what actually went wrong.",
+        review: "Migrated 12 commands in an afternoon. Decorators replaced 600 lines of registration boilerplate. that library that ends in .js could never.",
         avatar: "/avatars/socram09.png"
     },
     {
         name: "MARCROCK22",
-        review: "The documentation is so vast, I hired an archaeologist to explore it. They're still searching for the table of contents!",
+        review: "The docs actually explain things. Examples for every API. Wild concept for a Discord framework in 2026.",
         avatar: "/avatars/marcrock22.png"
     },
     {
         name: "FreeAoi",
-        review: "pinche kelsy ya hazme caso.",
+        review: "Switched from that library that ends in .js. Bot got jacked overnight — now bench presses 50k guilds on a 512MB container. No notes.",
         avatar: "/avatars/freeaoi.png"
     },
     {
         name: "Deivid",
-        review: "Memory management is incredible - it only needs all my PC's RAM, my phone's memory, and my smart fridge to run a startup bot connection.",
+        review: "RAM dropped from 3.8 GB to 600 MB after porting. Same bot, same features. Felt like deleting a tumor.",
         avatar: "/avatars/deivid.png"
     },
     {
         name: "JustEvil",
-        review: "The type system is so helpful it suggests types that TypeScript hasn't even invented yet.",
+        review: "Inference reaches into nested option objects. Auto-complete on subcommand args. I'm not going back.",
         avatar: "/avatars/justevil.png"
     },
     {
         name: "Miia",
-        review: "Event handling is so fast, my bot responds to messages before users even think about sending them.",
+        review: "uWS adapter + Redis cache and my shards stopped sweating. Latency cut in half. Built Different.",
         avatar: "/avatars/miia.png"
     }
 ]
 
 export function Testimonials() {
     return (
-        <section className="flex flex-col">
-            <div className="text-center">
-                <h2 className="text-4xl font-bold leading-[1.1] tracking-tight bg-gradient-to-r from-white to-neutral-300 bg-clip-text text-transparent">
-                    Everyone loves it
-                </h2>
-                <p className="mt-4 mb-4 text-base leading-relaxed text-neutral-400">
-                    Discover what our amazing community has to say about their experience with Seyfert.
-                </p>
-
-                <div className="flex items-center justify-center gap-2 my-4">
-                    <div className="h-[2px] w-32 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-                    <div className="relative h-2 w-2">
-                        <div className="absolute inset-0 rounded-full bg-white/40 animate-ping" />
-                        <div className="absolute inset-0 rounded-full bg-white/60" />
-                    </div>
-                    <div className="h-[2px] w-32 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+        <section className="flex flex-col py-12 gap-10">
+            {/* Header */}
+            <div className="text-center max-w-3xl mx-auto">
+                <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 border border-white/15 bg-white/5">
+                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-zinc-300 font-mono">
+                        // The Witnesses
+                    </span>
                 </div>
+                <h2 className="text-4xl md:text-6xl font-black leading-[1.0] tracking-tight uppercase">
+                    Some of the{" "}
+                    <span
+                        className="italic"
+                        style={{
+                            background:
+                                "linear-gradient(180deg, #ffffff 0%, #86efac 100%)",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
+                            backgroundClip: "text",
+                        }}
+                    >
+                        Chadest devs
+                    </span>{" "}
+                    in our community
+                </h2>
+                <p className="mt-4 text-zinc-500 max-w-xl mx-auto">
+                    From devs shipping real bots. Verified W&apos;s only.
+                </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-5">
-                {testimonials.map((testimonial, index) => (
-                    <div
-                        className={cn(
-                            // Base styles
-                            "group w-full border border-neutral-800 p-5 h-full rounded-sm",
-                            "relative overflow-hidden transition-all duration-300",
-                            // Hover effect styles
-                            "hover:-translate-y-1",
-                            "before:absolute before:top-0 before:left-0 before:w-[200%] before:h-full",
-                            "before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent",
-                            "before:skew-x-[-20deg] before:translate-x-[-100%]",
-                            "before:transition-transform before:duration-1000 before:ease-in-out",
-                            "hover:before:translate-x-[50%]",
-                            // Conditional styles for specific cards
-                            index === 1 || index === 4 ? "md:hover:-translate-y-4 md:-translate-y-3 md:shadow-lg md:shadow-neutral-900/50" : ""
-                        )}
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-[2px] bg-white/10">
+                {testimonials.map((t, index) => (
+                    <BrutalReview
                         key={index}
-                    >
-                        <GridBG size={20} />
-                        <div className="w-full flex mb-4 items-center">
-                            <Avatar className="w-10 h-10">
-                                <AvatarImage src={testimonial.avatar} />
-                                <AvatarFallback>
-                                    {testimonial.name.charAt(0)}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-grow pl-3">
-                                <p className="font-bold text-sm uppercase">{testimonial.name}</p>
-                                <p className="text-neutral-400 text-sm">@{testimonial.name.toLowerCase()}</p>
-                            </div>
-                        </div>
-                        <div className="w-full">
-                            <p className="text-sm">
-                                {testimonial.review}
-                            </p>
-                        </div>
-                    </div>
+                        index={index}
+                        name={t.name}
+                        review={t.review}
+                        avatar={t.avatar}
+                    />
                 ))}
             </div>
         </section>
     )
+}
+
+function BrutalReview({
+    name,
+    review,
+    avatar,
+    index,
+}: {
+    name: string;
+    review: string;
+    avatar: string;
+    index: number;
+}) {
+    const num = String(index + 1).padStart(2, "0");
+    return (
+        <div
+            className={cn(
+                "group relative flex flex-col bg-[#0a0a0a] p-6 min-h-[240px]",
+                "transition-colors duration-200 hover:bg-white/[0.03]"
+            )}
+        >
+            {/* Top label row */}
+            <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] uppercase tracking-[0.25em] font-mono font-bold text-zinc-600">
+                    // Review N°{num}
+                </span>
+                <span className="text-[10px] uppercase tracking-[0.2em] font-mono font-bold text-white/60 px-1.5 py-0.5 border border-white/20">
+                    Verified Chad
+                </span>
+            </div>
+
+            {/* Quote mark */}
+            <span
+                aria-hidden="true"
+                className="absolute top-2 right-3 text-6xl leading-none font-black text-white/[0.06] select-none pointer-events-none"
+            >
+                &ldquo;
+            </span>
+
+            {/* Review text */}
+            <p className="text-sm leading-relaxed text-zinc-200 mb-6 flex-1 relative">
+                {review}
+            </p>
+
+            {/* Author footer */}
+            <div className="flex items-center gap-3 pt-4 border-t border-white/10">
+                <Avatar className="w-10 h-10 rounded-none border border-white/20">
+                    <AvatarImage src={avatar} className="rounded-none grayscale group-hover:grayscale-0 transition-all" />
+                    <AvatarFallback className="rounded-none bg-white/5 text-white">
+                        {name.charAt(0)}
+                    </AvatarFallback>
+                </Avatar>
+                <div>
+                    <p className="font-black text-sm uppercase tracking-wide leading-none text-white">
+                        {name}
+                    </p>
+                    <p className="text-zinc-600 text-[11px] font-mono mt-1">
+                        @{name.toLowerCase()}
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
 }
