@@ -96,8 +96,7 @@ export async function CodeFight() {
         </p>
       </div>
 
-      {/* Code comparison grid */}
-      <div className="grid w-full min-w-0 md:grid-cols-2 gap-[2px] bg-white/10 border border-white/10">
+      <div className="grid w-full min-w-0 gap-[2px] border border-white/10 bg-white/10 md:grid-cols-2">
         <CodeBlock
           label="The Virgin"
           framework="that-library.js"

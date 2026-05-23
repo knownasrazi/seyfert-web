@@ -85,7 +85,7 @@ export function Footer() {
                     <div className="pt-6 mt-4 border-t border-white/10 grid grid-cols-2 sm:grid-cols-4 gap-4">
                         {[
                             { k: "STATUS", v: "PUMPED" },
-                            { k: "RUNTIME", v: "BUN / NODE" },
+                            { k: "RUNTIME", v: "DENO / NODE" },
                             { k: "VIBES", v: "IMMACULATE" },
                             { k: "COPE", v: "ZERO" },
                         ].map((m) => (

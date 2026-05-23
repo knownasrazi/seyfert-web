@@ -42,8 +42,8 @@ export function VirginVsChad() {
         </p>
       </div>
 
-      {/* Comparison grid */}
-      <div className="grid md:grid-cols-2 gap-0 relative">
+      {/* Comparison grid — virgin recedes, chad pops */}
+      <div className="grid md:grid-cols-2 gap-0 relative md:items-stretch">
         {/* VS badge — desktop center */}
         <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 items-center justify-center w-16 h-16 rotate-12 border-2 border-white bg-black shadow-[0_0_40px_rgba(255,255,255,0.25)]">
           <span className="font-black text-xl tracking-tighter italic">VS</span>
@@ -86,26 +86,37 @@ function VirginCard() {
   return (
     <div
       className={cn(
-        "relative border-2 border-zinc-800 bg-zinc-950/60 p-6 md:p-8",
+        "relative border-2 border-zinc-900/90 bg-zinc-950/80 p-6 md:p-8",
         "md:rounded-none md:border-r-0",
-        "before:absolute before:inset-0 before:bg-[repeating-linear-gradient(135deg,transparent,transparent_8px,rgba(255,255,255,0.015)_8px,rgba(255,255,255,0.015)_16px)] before:pointer-events-none"
+        "saturate-[0.25] brightness-[0.72] contrast-[0.9]",
+        "md:scale-[0.98] md:origin-center",
+        "before:absolute before:inset-0 before:z-[1] before:bg-black/35 before:pointer-events-none",
+        "after:absolute after:inset-0 after:z-[2] after:bg-[repeating-linear-gradient(135deg,transparent,transparent_8px,rgba(255,255,255,0.02)_8px,rgba(255,255,255,0.02)_16px)] after:pointer-events-none"
       )}
     >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-2 left-3 z-20 rotate-[-14deg] border border-red-950/80 bg-black/90 px-2 py-0.5 font-mono text-[9px] font-black uppercase tracking-[0.2em] text-red-600/90"
+      >
+        COPE
+      </div>
+
+      <div className="relative z-10">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <span className="text-3xl grayscale opacity-60">😬</span>
+        <span className="text-3xl grayscale opacity-40">😬</span>
         <div>
           <div className="text-[10px] uppercase tracking-[0.25em] font-bold text-red-500/80 font-mono">
             // The Virgin
           </div>
-          <h3 className="text-2xl md:text-3xl font-black uppercase italic text-zinc-500 leading-none mt-1">
+          <h3 className="text-2xl md:text-3xl font-black uppercase italic text-zinc-600 leading-none mt-1">
             that-library.js
           </h3>
         </div>
       </div>
 
       {/* Subtitle */}
-      <p className="text-xs text-zinc-600 italic mb-6 max-w-xs">
+      <p className="text-xs text-zinc-700 italic mb-6 max-w-xs">
         Slouched. Anxious. Mid. Apologizes for every npm warning.
       </p>
 
@@ -114,7 +125,7 @@ function VirginCard() {
         {virginTraits.map((t) => (
           <li
             key={t}
-            className="flex items-start gap-2.5 text-sm text-zinc-500"
+            className="flex items-start gap-2.5 text-sm text-zinc-600"
           >
             <span className="mt-[3px] inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-red-900/60 text-red-500/70 text-[10px] font-bold">
               ×
@@ -125,6 +136,7 @@ function VirginCard() {
           </li>
         ))}
       </ul>
+      </div>
     </div>
   );
 }
@@ -133,24 +145,44 @@ function ChadCard() {
   return (
     <div
       className={cn(
-        "relative border-2 border-white bg-white/[0.04] p-6 md:p-8",
-        "md:rounded-none",
-        "shadow-[0_0_60px_-10px_rgba(255,255,255,0.15)]"
+        "relative border-2 border-white bg-white/[0.07] p-6 md:p-8",
+        "md:rounded-none md:z-10",
+        "ring-1 ring-white/25 ring-offset-2 ring-offset-black",
+        "shadow-[0_0_70px_-8px_rgba(125,211,252,0.45),8px_8px_0_0_rgba(255,255,255,0.08)]",
+        "md:scale-[1.02] md:origin-center"
       )}
     >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,rgba(125,211,252,0.12),transparent_65%)]"
+      />
+
       {/* Approved corner badge */}
-      <div className="absolute -top-3 right-4 px-2 py-0.5 bg-white text-black text-[9px] font-black uppercase tracking-[0.2em]">
+      <div className="absolute -top-3 right-4 z-20 border-2 border-black px-2.5 py-0.5 bg-white text-black text-[9px] font-black uppercase tracking-[0.2em] shadow-[3px_3px_0_0_rgba(125,211,252,0.5)]">
         Approved
       </div>
 
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-2 left-3 z-20 rotate-12 border border-sky-300/40 bg-black/90 px-2 py-0.5 font-mono text-[9px] font-black uppercase tracking-[0.2em] text-sky-300"
+      >
+        W
+      </div>
+
+      <div className="relative z-10">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <span className="text-3xl">💪</span>
+        <span className="text-3xl drop-shadow-[0_0_12px_rgba(125,211,252,0.5)]">💪</span>
         <div>
           <div className="text-[10px] uppercase tracking-[0.25em] font-bold text-white/90 font-mono">
             // The Chad
           </div>
-          <h3 className="text-2xl md:text-3xl font-black uppercase italic text-white leading-none mt-1">
+          <h3
+            className="text-2xl md:text-3xl font-black uppercase italic leading-none mt-1 text-white"
+            style={{
+              textShadow: "0 0 40px rgba(125,211,252,0.35)",
+            }}
+          >
             seyfert
           </h3>
         </div>
@@ -175,6 +207,7 @@ function ChadCard() {
           </li>
         ))}
       </ul>
+      </div>
     </div>
   );
 }

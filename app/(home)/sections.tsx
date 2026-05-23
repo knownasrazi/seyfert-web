@@ -1,4 +1,4 @@
-import { ChadDivider } from "@/components/home/chad-divider";
+import { SectionIndex } from "@/components/home/section-index";
 import { FeaturesSectionWithHoverEffects } from "@/components/home/features";
 import { Testimonials } from "@/components/home/testimonials";
 import { Footer } from "@/components/home/footer";
@@ -32,44 +32,59 @@ export default function HomeSections() {
     <>
       {/* Concrete proof first */}
       <AnimatedSection>
-        <CodeFight />
+        <div className="relative">
+          <SectionIndex index={1} stamp="PROOF" />
+          <CodeFight />
+        </div>
       </AnimatedSection>
 
-      <ChadDivider label="PROOF ACCEPTED" />
-
-      {/* Meme payoff right after the code fight */}
       <AnimatedSection delay={0.1}>
-        <VirginVsChad />
-      </AnimatedSection>
-
-      <ChadDivider label="ARSENAL UNLOCKED" />
-
-      <AnimatedSection delay={0.15}>
-        <FeaturesSectionWithHoverEffects />
+        <div className="relative">
+          <SectionIndex index={2} stamp="VS" />
+          <VirginVsChad />
+        </div>
       </AnimatedSection>
 
       <AnimatedSection delay={0.15}>
-        <Migration />
+        <div className="relative">
+          <SectionIndex index={3} stamp="ARSENAL" />
+          <FeaturesSectionWithHoverEffects />
+        </div>
       </AnimatedSection>
 
-      {/* Social proof — devs */}
+      <AnimatedSection delay={0.15}>
+        <div className="relative">
+          <SectionIndex index={4} stamp="MIGRATE" />
+          <Migration />
+        </div>
+      </AnimatedSection>
+
       <AnimatedSection delay={0.2}>
-        <Testimonials />
+        <div className="relative">
+          <SectionIndex index={5} stamp="WITNESS" />
+          <Testimonials />
+        </div>
       </AnimatedSection>
 
-      {/* Social proof — bots in the wild */}
       <AnimatedSection delay={0.3}>
-        <UsedBySection />
+        <div className="relative">
+          <SectionIndex index={6} stamp="HOF" />
+          <UsedBySection />
+        </div>
       </AnimatedSection>
 
-      {/* OSS stats */}
       <AnimatedSection delay={0.4}>
-        <OpenSource repository={config.repository} />
+        <div className="relative">
+          <SectionIndex index={7} stamp="OSS" />
+          <OpenSource repository={config.repository} />
+        </div>
       </AnimatedSection>
 
-      {/* CTA close */}
       <AnimatedSection delay={0.5}>
-        <Footer />
+        <div className="relative">
+          <SectionIndex index={8} stamp="FINAL" />
+          <Footer />
+        </div>
       </AnimatedSection>
     </>
   );

@@ -1,6 +1,7 @@
 import { codeToHtml } from "shiki";
 import { cn } from "@/lib/utils";
 import { GradientItalic, SectionHeading } from "@/components/home/gradient-italic";
+import { MigrationCopeChecklist } from "@/components/home/migration-cope-checklist";
 
 type Pattern = {
   title: string;
@@ -144,6 +145,8 @@ export async function Migration() {
           Three patterns. Same outcome. Spot how the second column shrinks.
         </p>
       </div>
+
+      <MigrationCopeChecklist />
 
       {/* Patterns */}
       <div className="flex flex-col gap-6">

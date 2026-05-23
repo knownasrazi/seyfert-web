@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
+import { SocialCreditToast } from "@/components/home/social-credit-meme";
 import { ChevronDown, Copy, Check, Rocket } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -11,40 +12,46 @@ const INSTALL_COMMAND = "npm i seyfert";
 
 function CopyCommand() {
   const [copied, setCopied] = useState(false);
+  const [socialCredit, setSocialCredit] = useState(false);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(INSTALL_COMMAND);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
+      setSocialCredit(true);
+      setTimeout(() => setCopied(false), 2200);
+      setTimeout(() => setSocialCredit(false), 2800);
     } catch {
       /* clipboard not available */
     }
   };
 
   return (
-    <button
-      onClick={handleCopy}
-      aria-label="Copy install command"
-      className={cn(
-        "group inline-flex items-center gap-3 h-12 px-5",
-        "border-2 border-white/20 bg-black/40 backdrop-blur-sm",
-        "font-mono text-[13px] tracking-[0.18em] uppercase text-zinc-200",
-        "transition-all duration-200",
-        "hover:border-white/50 hover:bg-black/70 hover:text-white",
-        "cursor-pointer"
-      )}
-    >
-      <span className="text-zinc-500 select-none">$</span>
-      <span>{INSTALL_COMMAND}</span>
-      <span className="ml-1 flex items-center justify-center w-5 h-5 text-zinc-500 group-hover:text-white transition-colors">
-        {copied ? (
-          <Check className="size-4 text-emerald-400" />
-        ) : (
-          <Copy className="size-4" />
+    <>
+      <SocialCreditToast open={socialCredit} />
+      <button
+        onClick={handleCopy}
+        aria-label="Copy install command"
+        className={cn(
+          "group inline-flex items-center gap-3 h-12 px-5",
+          "border-2 border-white/20 bg-black/40 backdrop-blur-sm",
+          "font-mono text-[13px] tracking-[0.18em] uppercase text-zinc-200",
+          "transition-all duration-200",
+          "hover:border-white/50 hover:bg-black/70 hover:text-white",
+          "cursor-pointer",
         )}
-      </span>
-    </button>
+      >
+        <span className="text-zinc-500 select-none">$</span>
+        <span>{INSTALL_COMMAND}</span>
+        <span className="ml-1 flex items-center justify-center w-5 h-5 text-zinc-500 group-hover:text-white transition-colors">
+          {copied ? (
+            <Check className="size-4 text-emerald-400" />
+          ) : (
+            <Copy className="size-4" />
+          )}
+        </span>
+      </button>
+    </>
   );
 }
 
@@ -394,7 +401,7 @@ export default function Hero() {
         </div>
 
         {/* Scroll hint */}
-        <div className="hidden md:flex items-center gap-2 absolute bottom-10 left-1/2 -translate-x-1/2 text-zinc-500 text-xs tracking-wider">
+        <div className="hidden md:flex items-center gap-2 absolute bottom-0 left-1/2 -translate-x-1/2 pb-1 text-zinc-500 text-xs tracking-wider">
           <span className="font-mono uppercase">Witness the gains</span>
           <ChevronDown className="size-4 animate-bounce" />
         </div>
