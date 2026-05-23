@@ -3,6 +3,7 @@
 import { motion } from "motion/react"
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { GradientItalic, SectionHeading } from "@/components/home/gradient-italic";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
@@ -173,21 +174,10 @@ function OpenSourceContent({
                             // The Numbers
                         </span>
                     </div>
-                    <h2 className="text-4xl md:text-6xl font-black leading-[1.0] tracking-tight uppercase">
+                    <SectionHeading>
                         Open Source.{" "}
-                        <span
-                            className="italic"
-                            style={{
-                                background:
-                                    "linear-gradient(180deg, #ffffff 0%, #b0b0b0 100%)",
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent",
-                                backgroundClip: "text",
-                            }}
-                        >
-                            Chad Approved.
-                        </span>
-                    </h2>
+                        <GradientItalic variant="gray">Chad Approved.</GradientItalic>
+                    </SectionHeading>
                     <p className="mt-4 text-zinc-500 max-w-xl mx-auto">
                         Source code forged in the open and lifted by the Chadest devs around the globe. Star it, fork it, contribute.
                     </p>

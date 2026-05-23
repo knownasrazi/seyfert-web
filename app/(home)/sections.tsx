@@ -1,3 +1,4 @@
+import { ChadDivider } from "@/components/home/chad-divider";
 import { FeaturesSectionWithHoverEffects } from "@/components/home/features";
 import { Testimonials } from "@/components/home/testimonials";
 import { Footer } from "@/components/home/footer";
@@ -34,19 +35,21 @@ export default function HomeSections() {
         <CodeFight />
       </AnimatedSection>
 
-      {/* What you get */}
+      <ChadDivider label="PROOF ACCEPTED" />
+
+      {/* Meme payoff right after the code fight */}
       <AnimatedSection delay={0.1}>
+        <VirginVsChad />
+      </AnimatedSection>
+
+      <ChadDivider label="ARSENAL UNLOCKED" />
+
+      <AnimatedSection delay={0.15}>
         <FeaturesSectionWithHoverEffects />
       </AnimatedSection>
 
-      {/* Migration patterns — bridge from that other lib's mental model */}
       <AnimatedSection delay={0.15}>
         <Migration />
-      </AnimatedSection>
-
-      {/* Meme comparison */}
-      <AnimatedSection delay={0.15}>
-        <VirginVsChad />
       </AnimatedSection>
 
       {/* Social proof — devs */}

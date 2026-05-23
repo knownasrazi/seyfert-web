@@ -1,5 +1,6 @@
 import { codeToHtml } from "shiki";
 import { cn } from "@/lib/utils";
+import { GradientItalic, SectionHeading } from "@/components/home/gradient-italic";
 
 // Real comparison — both bots ship a working /ping slash command.
 // That library that ends in .js needs every command to live in the same registry + handler.
@@ -75,7 +76,7 @@ export async function CodeFight() {
   ]);
 
   return (
-    <section className="flex flex-col gap-10 py-12">
+    <section className="flex w-full min-w-0 flex-col gap-10 py-12">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto">
         <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 border border-white/15 bg-white/5">
@@ -83,30 +84,20 @@ export async function CodeFight() {
             // The Proof
           </span>
         </div>
-        <h2 className="text-4xl md:text-6xl font-black leading-[1.0] tracking-tight uppercase">
+        <SectionHeading className="text-3xl sm:text-4xl">
           Same{" "}
-          <code className="font-mono italic text-white/90 text-3xl md:text-5xl px-2 border-2 border-white/20 bg-white/5 align-baseline">/ping</code>{" "}
+          <code className="font-mono italic text-white/90 text-2xl sm:text-3xl md:text-5xl px-2 border-2 border-white/20 bg-white/5 align-baseline">/ping</code>{" "}
           command.
           <br />
-          <span
-            className="italic"
-            style={{
-              background: "linear-gradient(180deg, #ffffff 0%, #7dd3fc 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            One side looks jacked.
-          </span>
-        </h2>
+          <GradientItalic variant="sky">One side looks jacked.</GradientItalic>
+        </SectionHeading>
         <p className="mt-4 text-zinc-500 max-w-xl mx-auto">
           Real code. Real comparison. No editing tricks. Spot the Chad.
         </p>
       </div>
 
       {/* Code comparison grid */}
-      <div className="grid md:grid-cols-2 gap-[2px] bg-white/10 border border-white/10">
+      <div className="grid w-full min-w-0 md:grid-cols-2 gap-[2px] bg-white/10 border border-white/10">
         <CodeBlock
           label="The Virgin"
           framework="that-library.js"
@@ -127,8 +118,8 @@ export async function CodeFight() {
       </div>
 
       {/* Conclusion strip */}
-      <div className="border-y border-white/15 bg-white/[0.02] py-4 -mx-6">
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-[10px] uppercase tracking-[0.3em] font-mono text-zinc-500">
+      <div className="border-y border-white/15 bg-white/[0.02] py-4 sm:-mx-6">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 px-1 text-center text-[10px] uppercase tracking-[0.15em] font-mono text-zinc-500 sm:gap-x-8 sm:tracking-[0.3em]">
           <span>
             <span className="text-white font-bold">~43% LESS CODE</span>{" "}
             <span className="text-zinc-700">·</span>{" "}
@@ -172,13 +163,13 @@ function CodeBlock({
   return (
     <div
       className={cn(
-        "relative flex flex-col bg-[#0a0a0a]",
+        "relative flex min-w-0 flex-col bg-[#0a0a0a]",
         virgin && "opacity-95"
       )}
     >
       {/* Card header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
-        <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center justify-between gap-2 px-5 py-3 border-b border-white/10">
+        <div className="flex min-w-0 items-center gap-3">
           <span
             className={cn(
               "text-[10px] uppercase tracking-[0.25em] font-mono font-bold",
@@ -223,10 +214,12 @@ function CodeBlock({
       {/* Code */}
       <div
         className={cn(
-          "text-[12px] sm:text-[13px] font-mono leading-[1.7] overflow-x-auto",
+          "min-w-0 max-w-full overflow-x-auto",
+          "text-[12px] sm:text-[13px] font-mono leading-[1.7]",
           "p-5 bg-[#0d1117] flex-1",
           // shiki output: remove inner pre padding/bg so our wrapper styles it
-          "[&_pre]:!bg-transparent [&_pre]:!p-0 [&_code]:!bg-transparent",
+          "[&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-0 [&_pre]:w-max [&_pre]:min-w-full",
+          "[&_code]:!bg-transparent [&_code]:whitespace-pre",
           virgin && "saturate-[0.7]"
         )}
         dangerouslySetInnerHTML={{ __html: html }}
@@ -251,13 +244,13 @@ function StatCell({
   highlight?: boolean;
 }) {
   return (
-    <div className="px-4 py-3 border-r last:border-r-0 border-white/10">
+    <div className="min-w-0 px-4 py-3 border-r last:border-r-0 border-white/10">
       <div className="text-[9px] uppercase tracking-[0.25em] font-mono text-zinc-600">
         {label}
       </div>
       <div
         className={cn(
-          "mt-1 text-xs font-bold uppercase tracking-wider",
+          "mt-1 text-xs font-bold uppercase tracking-wider break-words",
           highlight ? "text-white" : "text-zinc-500"
         )}
       >

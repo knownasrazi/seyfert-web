@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar"
+import { GradientItalic, SectionHeading } from "@/components/home/gradient-italic";
 import { cn } from "@/lib/utils"
 
 const testimonials = [
@@ -44,22 +45,11 @@ export function Testimonials() {
                         // The Witnesses
                     </span>
                 </div>
-                <h2 className="text-4xl md:text-6xl font-black leading-[1.0] tracking-tight uppercase">
+                <SectionHeading>
                     Some of the{" "}
-                    <span
-                        className="italic"
-                        style={{
-                            background:
-                                "linear-gradient(180deg, #ffffff 0%, #86efac 100%)",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                            backgroundClip: "text",
-                        }}
-                    >
-                        Chadest devs
-                    </span>{" "}
-                    in our community
-                </h2>
+                    <GradientItalic variant="green">Chadest devs</GradientItalic> in our
+                    community
+                </SectionHeading>
                 <p className="mt-4 text-zinc-500 max-w-xl mx-auto">
                     From devs shipping real bots. Verified W&apos;s only.
                 </p>

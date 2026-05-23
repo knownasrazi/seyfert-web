@@ -1,5 +1,6 @@
 import { codeToHtml } from "shiki";
 import { cn } from "@/lib/utils";
+import { GradientItalic, SectionHeading } from "@/components/home/gradient-italic";
 
 type Pattern = {
   title: string;
@@ -127,7 +128,7 @@ export async function Migration() {
   );
 
   return (
-    <section className="flex flex-col gap-10 py-12">
+    <section className="flex w-full min-w-0 flex-col gap-10 py-12">
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto">
         <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 border border-white/15 bg-white/5">
@@ -135,23 +136,10 @@ export async function Migration() {
             // The Migration
           </span>
         </div>
-        <h2 className="text-4xl md:text-6xl font-black leading-[1.0] tracking-tight uppercase">
-          From{" "}
-          <span className="text-zinc-600 line-through decoration-2">Cope</span>{" "}
-          to{" "}
-          <span
-            className="italic"
-            style={{
-              background:
-                "linear-gradient(180deg, #ffffff 0%, #d4a857 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            W.
-          </span>
-        </h2>
+        <SectionHeading>
+          From <span className="text-zinc-600 line-through decoration-2">Cope</span> to{" "}
+          <GradientItalic variant="gold">W.</GradientItalic>
+        </SectionHeading>
         <p className="mt-4 text-zinc-500 max-w-xl mx-auto">
           Three patterns. Same outcome. Spot how the second column shrinks.
         </p>
@@ -173,8 +161,8 @@ export async function Migration() {
       </div>
 
       {/* Bottom strip */}
-      <div className="border-y border-white/15 bg-white/[0.02] py-4 -mx-6">
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-[10px] uppercase tracking-[0.3em] font-mono text-zinc-500">
+      <div className="border-y border-white/15 bg-white/[0.02] py-4 sm:-mx-6">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 px-1 text-center text-[10px] uppercase tracking-[0.15em] font-mono text-zinc-500 sm:gap-x-8 sm:tracking-[0.3em]">
           <span>
             <span className="text-white font-bold">TIME TO MIGRATE:</span>{" "}
             <span>~1 afternoon</span>
@@ -212,14 +200,14 @@ function PatternBlock({
 }) {
   const num = String(index + 1).padStart(2, "0");
   return (
-    <div className="border-2 border-white/15 bg-[#0a0a0a]">
+    <div className="w-full min-w-0 border-2 border-white/15 bg-[#0a0a0a]">
       {/* Header bar */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
-        <div className="flex items-center gap-4">
-          <span className="text-[10px] uppercase tracking-[0.25em] font-mono font-bold text-zinc-600">
+      <div className="flex min-w-0 items-center justify-between gap-3 px-5 py-3 border-b border-white/10">
+        <div className="flex min-w-0 items-center gap-4">
+          <span className="shrink-0 text-[10px] uppercase tracking-[0.25em] font-mono font-bold text-zinc-600">
             // Pattern {num}
           </span>
-          <span className="text-sm md:text-base font-black uppercase tracking-tight text-white">
+          <span className="min-w-0 truncate text-sm md:text-base font-black uppercase tracking-tight text-white">
             {title}
           </span>
         </div>
@@ -229,7 +217,7 @@ function PatternBlock({
       </div>
 
       {/* Code grid */}
-      <div className="grid md:grid-cols-2 gap-[2px] bg-white/10">
+      <div className="grid w-full min-w-0 md:grid-cols-2 gap-[2px] bg-white/10">
         <CodeColumn
           virgin
           label="Virgin that-library.js"
@@ -259,26 +247,28 @@ function CodeColumn({
   html: string;
 }) {
   return (
-    <div className="flex flex-col bg-[#0a0a0a]">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-white/5">
+    <div className="flex min-w-0 flex-col bg-[#0a0a0a]">
+      <div className="flex min-w-0 items-center justify-between gap-2 px-4 py-2 border-b border-white/5">
         <span
           className={cn(
-            "text-[10px] uppercase tracking-[0.25em] font-mono font-bold",
+            "min-w-0 shrink text-[10px] uppercase tracking-[0.25em] font-mono font-bold",
             virgin ? "text-red-500/80" : "text-emerald-400",
           )}
         >
           {virgin ? "😬" : "💪"} {label}
         </span>
         {file && (
-          <span className="text-[10px] font-mono text-zinc-600 tracking-wider">
+          <span className="shrink-0 max-w-[55%] truncate text-right text-[10px] font-mono text-zinc-600 tracking-wider sm:max-w-none">
             {file}
           </span>
         )}
       </div>
       <div
         className={cn(
-          "text-[12px] font-mono leading-[1.7] overflow-x-auto p-4 flex-1 bg-[#0d1117]",
-          "[&_pre]:!bg-transparent [&_pre]:!p-0 [&_code]:!bg-transparent",
+          "min-w-0 max-w-full overflow-x-auto",
+          "text-[12px] font-mono leading-[1.7] p-4 flex-1 bg-[#0d1117]",
+          "[&_pre]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-0 [&_pre]:w-max [&_pre]:min-w-full",
+          "[&_code]:!bg-transparent [&_code]:whitespace-pre",
           virgin && "saturate-[0.6] opacity-90",
         )}
         dangerouslySetInnerHTML={{ __html: html }}

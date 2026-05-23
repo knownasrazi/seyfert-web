@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { GradientItalic, SectionHeading } from "@/components/home/gradient-italic";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
     Typescript01Icon,
@@ -70,21 +71,9 @@ export function FeaturesSectionWithHoverEffects() {
                         // The Arsenal
                     </span>
                 </div>
-                <h2 className="text-4xl md:text-6xl font-black leading-[1.0] tracking-tight uppercase">
-                    Forged{" "}
-                    <span
-                        className="italic"
-                        style={{
-                            background:
-                                "linear-gradient(180deg, #ffffff 0%, #d4a857 100%)",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                            backgroundClip: "text",
-                        }}
-                    >
-                        for Chads.
-                    </span>
-                </h2>
+                <SectionHeading>
+                    Forged <GradientItalic variant="gold">for Chads.</GradientItalic>
+                </SectionHeading>
                 <p className="mt-4 text-zinc-500 max-w-xl mx-auto">
                     No marketing fluff. Real features, real APIs, zero excuses.
                 </p>

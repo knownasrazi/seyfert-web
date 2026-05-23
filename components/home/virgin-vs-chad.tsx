@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { GradientItalic, SectionHeading } from "@/components/home/gradient-italic";
 
 const virginTraits = [
   "Casts to `any` to ship faster",
@@ -24,7 +25,7 @@ const chadTraits = [
 
 export function VirginVsChad() {
   return (
-    <section className="relative flex flex-col gap-8 py-12">
+    <section className="relative flex w-full min-w-0 flex-col gap-8 py-12">
       {/* Section header */}
       <div className="text-center max-w-3xl mx-auto">
         <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 border border-white/15 bg-white/5">
@@ -32,22 +33,10 @@ export function VirginVsChad() {
             The Receipts
           </span>
         </div>
-        <h2 className="text-4xl md:text-6xl font-black leading-[1.0] tracking-tight uppercase">
-          Virgin Framework{" "}
-          <span className="text-zinc-600">vs</span>{" "}
-          <span
-            className="italic"
-            style={{
-              background:
-                "linear-gradient(180deg, #ffffff 0%, #7dd3fc 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            Chad Seyfert
-          </span>
-        </h2>
+        <SectionHeading>
+          Virgin Framework <span className="text-zinc-600">vs</span>{" "}
+          <GradientItalic variant="sky">Chad Seyfert</GradientItalic>
+        </SectionHeading>
         <p className="mt-4 text-zinc-500 max-w-xl mx-auto">
           Side by side. Pick your fighter.
         </p>
@@ -75,14 +64,18 @@ export function VirginVsChad() {
         <ChadCard />
       </div>
 
-      {/* Bottom tape */}
-      <div className="relative mt-4 -mx-6 overflow-hidden border-y border-white/15 bg-white/[0.02] py-3">
-        <div className="flex items-center justify-center gap-6 text-zinc-500 font-mono text-[10px] uppercase tracking-[0.3em]">
-          <span>SOURCE: TRUST ME BRO</span>
-          <span className="text-white/30">★</span>
-          <span>METHODOLOGY: VIBES</span>
-          <span className="text-white/30">★</span>
-          <span>RESULT: SEYFERT WINS</span>
+      {/* Bottom tape — no -mx on mobile (main overflow-x-hidden clips it) */}
+      <div className="relative mt-4 border-y border-white/15 bg-white/[0.02] py-3 sm:-mx-6">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 px-1 text-center font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500 sm:tracking-[0.3em]">
+          <span className="whitespace-nowrap">SOURCE: TRUST ME BRO</span>
+          <span className="text-white/30" aria-hidden>
+            ★
+          </span>
+          <span className="whitespace-nowrap">METHODOLOGY: VIBES</span>
+          <span className="text-white/30" aria-hidden>
+            ★
+          </span>
+          <span className="whitespace-nowrap">RESULT: SEYFERT WINS</span>
         </div>
       </div>
     </section>

@@ -1,3 +1,4 @@
+import { GradientItalic, SectionHeading } from "@/components/home/gradient-italic";
 import { TestimonialCard, TestimonialAuthor } from "@/components/ui/testimonial-card"
 
 const usedByEntries: Array<{
@@ -80,21 +81,9 @@ export function UsedBySection() {
                         // The Hall of Gains
                     </span>
                 </div>
-                <h2 className="text-4xl md:text-6xl font-black leading-[1.0] tracking-tight uppercase">
-                    Bots Built by{" "}
-                    <span
-                        className="italic"
-                        style={{
-                            background:
-                                "linear-gradient(180deg, #ffffff 0%, #b0b0b0 100%)",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                            backgroundClip: "text",
-                        }}
-                    >
-                        Chads.
-                    </span>
-                </h2>
+                <SectionHeading>
+                    Bots Built by <GradientItalic variant="gray">Chads.</GradientItalic>
+                </SectionHeading>
                 <p className="mt-4 text-zinc-500 max-w-xl mx-auto">
                     These bots run on pure Chad energy. Open a PR to flex your bot in the hall of fame.
                 </p>

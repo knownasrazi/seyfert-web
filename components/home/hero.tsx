@@ -276,7 +276,7 @@ export default function Hero() {
           width={454}
           height={550}
           priority
-          className="relative h-[45vh] md:h-[60vh] w-auto object-contain opacity-25 md:opacity-100 drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]"
+          className="relative h-[50vh] md:h-[60vh] w-auto object-contain opacity-45 md:opacity-100 drop-shadow-[0_0_40px_rgba(120,200,255,0.15)] md:drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]"
         />
       </div>
 

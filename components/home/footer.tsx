@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import Discord from '@/components/ui/icons/discord';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
+import { GradientItalic, SectionHeading } from '@/components/home/gradient-italic';
 import { cn } from '@/lib/utils';
 
 export function Footer() {
@@ -38,21 +39,10 @@ export function Footer() {
                         </span>
                     </div>
 
-                    <h2 className="text-4xl md:text-6xl font-black leading-[1.0] tracking-tight uppercase">
+                    <SectionHeading>
                         Stop coping.{" "}
-                        <span
-                            className="italic"
-                            style={{
-                                background:
-                                    "linear-gradient(180deg, #ffffff 0%, #d4a857 100%)",
-                                WebkitBackgroundClip: "text",
-                                WebkitTextFillColor: "transparent",
-                                backgroundClip: "text",
-                            }}
-                        >
-                            Start shipping.
-                        </span>
-                    </h2>
+                        <GradientItalic variant="gold">Start shipping.</GradientItalic>
+                    </SectionHeading>
 
                     <p className="text-zinc-400 text-lg max-w-xl leading-relaxed">
                         Install <span className="text-white font-bold">Seyfert</span>. Open the docs. Ship a bot. That&apos;s the whole pitch.
