@@ -70,6 +70,14 @@ const usedByEntries: Array<{
             },
             text: "Lumi is a multi-funcion bot, designed to allow users to use features that would need multiple bots to do, developed with Seyfert for max optimization. I decided to change from that library that ends in .js to Seyfert because of it's optimizations and non-ram eating implementation. Would likely say to my friends to use it aswell!"
         },
+        {
+            author: {
+                name: "Nazha",
+                handle: "@Nazha#057",
+                avatar: "/bots/nazha.png"
+            },
+            text: "Nazha is an all-in-one Discord music bot built with Seyfert, delivering high performance, low memory usage, and a smooth user experience. Seyfert's modern architecture and excellent optimization make development faster, cleaner, and more scalable. It's a framework I'd highly recommend to any Discord bot developer."
+        },
     ]
 
 export function UsedBySection() {
