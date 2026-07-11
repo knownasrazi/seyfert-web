@@ -1,0 +1,195 @@
+---
+title: Music Library
+---
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+Seyfert doesn't have support for playing audio, but we can use an external library called [hoshimi](https://npmx.dev/package/hoshimi), an easy to use [Lavalink v4](https://lavalink.dev) client.
+
+### Installation
+
+`hoshimi` bundles the node connection and the player, so it's the only dependency you need to install to move forward within this guide.
+
+```sh title="Dependencies..." copy showLineNumbers=false
+pnpm add hoshimi
+```
+
+<Callout>
+You also need a running [Lavalink v4](https://lavalink.dev) node for hoshimi to connect to.
+</Callout>
+
+### Setup
+
+<Callout title="Understanding declare module">
+
+To be able to move forward within this guide it is highly recommended to read the [Understanding declare module](/docs/learn/getting-started/declare-module) for a better understanding of what we are doing.
+</Callout>
+
+hoshimi needs two things from the client: the **raw** gateway packets, so it can track voice state, and the bot id once it's **ready**, so it can authenticate against the node. We attach the manager to a small `Client` subclass and wire each of those with its own event. For further information about the different options and events, see the official [hoshimi documentation](https://www.npmx.dev/package/hoshimi).
+
+<Tabs items={['index.ts', 'src/events/raw.ts', 'src/events/botReady.ts', 'play.ts']}>
+<Tab value="index.ts">
+```ts twoslash title="index.ts" showLineNumbers
+import { Client, type ParseClient } from "seyfert";
+import { Hoshimi, SearchEngines } from "hoshimi";
+
+//A custom client that holds the hoshimi manager
+class MusicClient extends Client {
+	hoshimi = new Hoshimi({
+		defaultSearchEngine: SearchEngines.Youtube,
+		sendPayload: async (guildId, payload) => {
+			await this.gateway.send(this.gateway.calculateShardId(guildId), payload);
+		},
+		nodes: [
+			{
+				host: "localhost",
+				port: 2333,
+				password: "youshallnotpass",
+				secure: false
+			}
+		]
+	});
+}
+
+const client = new MusicClient();
+
+//To see whether the node is connected
+client.hoshimi.on("nodeReady", (node) =>
+	console.log(`Lavalink ${node.id}: Ready!`)
+);
+
+declare module "seyfert" {
+	interface SeyfertRegistry {
+		client: ParseClient<MusicClient>;
+	}
+}
+
+client.start().then(() => client.uploadCommands());
+```
+  </Tab>
+  <Tab value="src/events/raw.ts">
+```ts twoslash title="src/events/raw.ts" showLineNumbers
+import type { ParseClient, Client } from "seyfert";
+import type { Hoshimi } from "hoshimi";
+declare module "seyfert" {
+	interface SeyfertRegistry { client: ParseClient<Client<true>> & { hoshimi: Hoshimi } }
+}
+// ---cut---
+import type { ChannelDeletePacket, VoicePacket, VoiceServer, VoiceState } from "hoshimi";
+import { createEvent } from "seyfert";
+
+//Discord delivers voice updates through the raw event; forward them to hoshimi.
+type AnyPacket = VoicePacket | VoiceServer | VoiceState | ChannelDeletePacket;
+
+export default createEvent({
+	data: { name: "raw" },
+	run(payload, client) {
+		client.hoshimi.updateVoiceState(payload as AnyPacket);
+	}
+});
+```
+  </Tab>
+  <Tab value="src/events/botReady.ts">
+```ts twoslash title="src/events/botReady.ts" showLineNumbers
+import type { ParseClient, Client } from "seyfert";
+import type { Hoshimi } from "hoshimi";
+declare module "seyfert" {
+	interface SeyfertRegistry { client: ParseClient<Client<true>> & { hoshimi: Hoshimi } }
+}
+// ---cut---
+import { createEvent } from "seyfert";
+
+//Once the bot is ready we know its id, so hoshimi can connect to the nodes.
+export default createEvent({
+	data: { name: "botReady", once: true },
+	run(user, client) {
+		client.hoshimi.init({ id: user.id, username: user.username });
+	}
+});
+```
+  </Tab>
+  <Tab value="play.ts">
+```ts twoslash title="src/commands/play.ts" showLineNumbers
+// @exactOptionalPropertyTypes: false
+import type { ParseClient, Client } from "seyfert";
+import type { Hoshimi } from "hoshimi";
+declare module "seyfert" {
+	interface SeyfertRegistry { client: ParseClient<Client<true>> & { hoshimi: Hoshimi } }
+}
+// ---cut---
+import {
+	Command,
+	Declare,
+	Options,
+	type CommandContext,
+	createStringOption
+} from "seyfert";
+import { MessageFlags } from "seyfert";
+import { LoadType } from "hoshimi";
+
+const options = {
+	query: createStringOption({
+		description: "Enter a song name or url.",
+		required: true
+	})
+};
+
+@Declare({
+	name: "play",
+	description: "Play music."
+})
+@Options(options)
+export default class PlayCommand extends Command {
+	async run(ctx: CommandContext<typeof options>) {
+		const { options, client, guildId, channelId, member, author } = ctx;
+		const { query } = options;
+
+		if (!guildId || !member) return;
+
+		const voice = await member.voice();
+		if (!voice.channelId)
+			return ctx.write({
+				content: "You must be in a voice channel to play music.",
+				flags: MessageFlags.Ephemeral
+			});
+
+		const me = await ctx.me();
+		const botVoice = await me?.voice();
+		if (botVoice && botVoice.channelId !== voice.channelId)
+			return ctx.write({
+				content: "You must be in the same voice channel as me.",
+				flags: MessageFlags.Ephemeral
+			});
+
+		const player = client.hoshimi.createPlayer({
+			guildId: guildId,
+			textId: channelId,
+			voiceId: voice.channelId,
+			volume: 100
+		});
+
+		await player.connect();
+
+		const { loadType, tracks, playlist } = await player.search({
+			query,
+			requester: author
+		});
+
+		if (loadType === LoadType.Empty || loadType === LoadType.Error)
+			return ctx.write({ content: "No results found!" });
+
+		if (loadType === LoadType.Playlist) await player.queue.add(tracks);
+		else await player.queue.add(tracks[0]);
+
+		if (!player.playing) await player.play();
+
+		return ctx.write({
+			content:
+				loadType === LoadType.Playlist
+					? `Queued ${tracks.length} tracks from ${playlist?.info.name}`
+					: `Queued ${tracks[0].info.title}`
+		});
+	}
+}
+```
+  </Tab>
+</Tabs>

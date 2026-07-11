@@ -1,0 +1,280 @@
+---
+title: Structures
+---
+
+When you fetch or receive Discord objects, Seyfert returns typed structures with useful methods and properties. Here's a reference for the most common ones.
+
+## Member
+
+```ts twoslash
+import { type GuildCommandContext } from 'seyfert';
+const ctx = {} as GuildCommandContext;
+// ---cut---
+const member = ctx.member;
+
+member.id;                          // User ID
+member.guildId;                     // Guild ID
+member.user;                        // User object
+member.roles.keys;                  // readonly string[] — role IDs, including @everyone
+await member.roles.list();          // GuildRoleStructure[]
+```
+
+### Voice State
+
+```ts twoslash
+import { type GuildMember } from 'seyfert';
+const member = {} as GuildMember;
+// ---cut---
+// From cache
+const voice = await member.voice('cache');
+
+// Cache with API fallback
+const voiceFlow = await member.voice('flow');
+
+voice?.channelId;   // Voice channel ID or null
+```
+
+### Permissions
+
+```ts twoslash
+import { type GuildMember } from 'seyfert';
+const member = {} as GuildMember;
+// ---cut---
+// From cache
+const perms = await member.fetchPermissions();
+perms.has(['Administrator']);                       // boolean
+perms.missings(['SendMessages', 'EmbedLinks']);     // return missings permisions, empty array if not
+```
+
+### Actions
+
+```ts twoslash
+import { type GuildMember } from 'seyfert';
+const member = {} as GuildMember;
+// ---cut---
+await member.ban({ deleteMessageSeconds: 0, reason: 'Reason' });
+await member.kick('Reason');
+await member.edit({ nick: 'New Nickname' });
+await member.write({ content: 'DM message' });    // Send DM
+```
+
+## Guild
+
+```ts twoslash
+import { type GuildCommandContext } from 'seyfert';
+const ctx = {} as GuildCommandContext;
+// ---cut---
+const guild = await ctx.guild();
+
+guild.id;                                           // Guild ID
+guild.name;                                         // Guild name
+guild.memberCount;                                  // Approximate member count
+await guild.members.fetch('userId');                // Fetch a specific member
+await guild.members.list({ limit: 100 });          // List members
+```
+
+## Channel
+
+```ts twoslash
+import { type UsingClient } from 'seyfert';
+const client = {} as UsingClient;
+// ---cut---
+const channel = await client.channels.fetch('channelId');
+
+channel.id;                    // Channel ID
+
+// Type guards
+channel.isThread();            // ThreadChannel
+channel.isNews();              // AnnouncementChannel
+channel.isVoice();             // VoiceChannel
+channel.isStage();             // StageChannel
+
+// Send a message
+if (channel.isTextable()) await channel.messages.write({ content: 'Hello' });
+```
+
+## Message
+
+```ts twoslash
+import { type Message } from 'seyfert';
+const message = {} as Message;
+// ---cut---
+message.id;                    // Message ID
+message.content;               // Text content
+message.author;                // User who sent it
+message.guildId;               // Guild ID (null in DMs)
+message.channelId;             // Channel ID
+message.createdTimestamp;      // Unix timestamp
+
+// Actions
+await message.reply({ content: 'Reply!' });
+await message.edit({ content: 'Edited' });
+await message.delete();
+await message.crosspost();     // Publish in announcement channel
+
+// Create a component collector
+message.createComponentCollector({ /* ... */ });
+```
+
+## Permissions
+
+Common permission strings used in `defaultMemberPermissions`, `botPermissions`, and permission checks:
+
+| Permission | Description |
+| --- | --- |
+| `Administrator` | Full access to everything |
+| `ManageGuild` | Manage server settings |
+| `ManageRoles` | Create and edit roles |
+| `ManageChannels` | Create and edit channels |
+| `KickMembers` | Kick members |
+| `BanMembers` | Ban members |
+| `ManageMessages` | Delete and pin messages |
+| `SendMessages` | Send messages in channels |
+| `EmbedLinks` | Send embedded content |
+| `AttachFiles` | Upload files |
+| `ReadMessageHistory` | View channel history |
+| `ViewChannel` | View channels |
+| `Connect` | Connect to voice channels |
+| `Speak` | Speak in voice channels |
+| `MoveMembers` | Move members between voice channels |
+| `ModerateMembers` | Timeout members |
+
+## Interaction Type Guards
+
+<Callout type="warning">
+At Seyfert, we do not recommend using this event unless it is strictly necessary (such as for urgent support of a feature)
+</Callout>
+
+In the `interactionCreate` event or when manually handling interactions:
+
+```ts
+import { createEvent } from 'seyfert';
+
+export default createEvent({
+    data: { name: 'interactionCreate' },
+    run(interaction, client) {
+        if (interaction.isButton()) { /* ButtonInteraction */ }
+        if (interaction.isStringSelectMenu()) { /* StringSelectMenuInteraction */ }
+        if (interaction.isUserSelectMenu()) { /* UserSelectMenuInteraction */ }
+        if (interaction.isRoleSelectMenu()) { /* RoleSelectMenuInteraction */ }
+        if (interaction.isChannelSelectMenu()) { /* ChannelSelectMenuInteraction */ }
+        if (interaction.isMentionableSelectMenu()) { /* ... */ }
+        if (interaction.isModalSubmit()) { /* ModalSubmitInteraction */ }
+        if (interaction.isAutocomplete()) { /* AutocompleteInteraction */ }
+        if (interaction.isChatInput()) { /* ChatInputCommandInteraction */ }
+    },
+});
+```
+
+## Shorters
+
+Shorters are convenience methods on the client for common operations without needing to fetch full objects first:
+
+```ts twoslash
+import { type UsingClient } from 'seyfert';
+const client = {} as UsingClient;
+// ---cut---
+// Users
+await client.users.fetch('userId');
+await client.users.createDM('userId');
+
+// Messages
+await client.messages.write('channelId', { content: 'Hello' });
+await client.messages.edit('messageId', 'channelId', { content: 'Edited' });
+await client.messages.delete('messageId', 'channelId');
+
+// Members
+await client.members.fetch('guildId', 'userId');
+await client.members.edit('guildId', 'userId', { nick: 'New Name' });
+await client.members.kick('guildId', 'userId');
+await client.members.ban('guildId', 'userId');
+
+// Roles
+await client.roles.create('guildId', { name: 'New Role', color: 0xFF0000 });
+await client.roles.edit('guildId', 'roleId', { name: 'Updated' });
+
+// Guilds
+await client.guilds.fetch('guildId');
+await client.guilds.list();
+```
+
+For more on Shorters and the Proxy API, see [Shorters and Proxy](/docs/recipes/api-access).
+
+## Transformers
+
+A transformer is a function that takes the raw data Discord sends and turns it into whatever value you need. Instead of working with the default structures, you can replace them with your own shape, keeping a reference to the raw object when you still need it.
+
+Define a transformer by assigning to `Transformers.<Structure>` and declare its type through the `CustomStructures` interface so the new shape is reflected across your whole project:
+
+```ts twoslash
+import type { APIUser } from 'seyfert';
+
+interface MyUser {
+    username: string;
+    isAdmin: boolean;
+    raw(): Promise<APIUser>;
+}
+//---cut---
+import { Transformers } from 'seyfert';
+
+Transformers.User = (client, data) => {
+    return {
+        username: data.username,
+        isAdmin: ['123456789012345678'].includes(data.id),
+        raw() {
+            return client.users.raw(data.id);
+        },
+    };
+};
+
+/*
+At this point, you should have a `declare module "seyfert"` in your project,
+if not, add it.
+*/
+declare module "seyfert" {
+// Declaring the type this way will reflect in the typing throughout the entire project.
+    interface CustomStructures {
+        User: MyUser;
+    }
+// You can add as many transformers as you like with any type.
+}
+```
+
+Let the autocomplete of your editor guide you and discover all the possibilities you have.
+```ts twoslash
+import { Transformers } from 'seyfert';
+
+Transformers.GuildMember
+              // ^|
+```
+
+Once defined, the transformed shape is used everywhere that structure appears. For the user transformer above, `ctx.author` now exposes your custom properties and methods:
+```ts twoslash
+import type { APIUser } from 'seyfert';
+
+interface MyUser {
+    username: string;
+    isAdmin: boolean;
+    raw(): Promise<APIUser>;
+}
+
+declare module "seyfert" {
+    interface CustomStructures {
+        User: MyUser;
+    }
+}
+//---cut---
+import { type CommandContext, Command, Declare } from 'seyfert';
+
+@Declare({
+    name: 'ping',
+    description: 'Ping!',
+})
+class Ping extends Command {
+    async run(ctx: CommandContext) {
+        const result = await ctx.author.raw();
+                                     // ^|
+        console.log(result.id, result.username);
+    }
+}
+```

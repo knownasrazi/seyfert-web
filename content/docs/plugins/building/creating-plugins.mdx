@@ -1,0 +1,170 @@
+---
+title: Creating Plugins
+---
+
+Start with `createPlugin(...)`. It preserves inference and keeps plugin metadata attached to the object you export.
+
+```ts title="src/ping-plugin.ts"
+import { createPlugin } from 'seyfert';
+import PingCommand from './commands/ping';
+
+export const pingPlugin = createPlugin({
+    name: 'ping-plugin',
+    register(api) {
+        // contribute a command through the registration api
+        api.commands.add(PingCommand);
+    },
+});
+```
+
+Install plugins with `definePlugins(...)` when you want one canonical tuple for both runtime and types.
+
+```ts title="src/index.ts"
+import { Client, definePlugins } from 'seyfert';
+import { pingPlugin } from './ping-plugin';
+
+// one canonical tuple shared by runtime and types
+const plugins = definePlugins(pingPlugin);
+
+// register the tuple's types so app code sees plugin helpers
+declare module 'seyfert' {
+    interface SeyfertRegistry { plugins: typeof plugins }
+}
+
+const client = new Client({
+    plugins,
+});
+```
+
+`definePlugins(...)` accepts rest arguments, an existing array, or no plugins:
+
+```ts
+// rest arguments
+const plugins = definePlugins(loggerPlugin(), economyPlugin());
+// an existing array works too
+const samePlugins = definePlugins([loggerPlugin(), economyPlugin()]);
+// or no plugins at all
+const emptyPlugins = definePlugins();
+```
+
+When plugins are stateful, create each instance once and reuse it:
+
+```ts
+// build each stateful plugin once
+const storage = storagePlugin();
+// reuse that same instance instead of creating a new one
+const economy = economyPlugin({ storage });
+
+const plugins = definePlugins(storage, economy);
+```
+
+## Client and Context Helpers
+
+Use `client` for stable app-wide resources. Use `ctx` for helpers created around an interaction.
+
+```ts title="src/logger-plugin.ts"
+import { createPlugin } from 'seyfert';
+
+export interface LoggerPluginOptions {
+    name?: string;
+}
+
+class SimpleLogger {
+    constructor(
+        private readonly name = 'bot',
+        private readonly fields: Record<string, string> = {},
+    ) {}
+
+    child(fields: Record<string, string>) {
+        return new SimpleLogger(this.name, { ...this.fields, ...fields });
+    }
+
+    info(message: string) {
+        console.info(`[${this.name}]`, this.fields, message);
+    }
+
+    flush() {
+        return Promise.resolve();
+    }
+}
+
+export function loggerPlugin(options: LoggerPluginOptions = {}) {
+    const root = new SimpleLogger(options.name);
+
+    return createPlugin({
+        name: 'example-logger',
+        client: {
+            // app-wide helper: available as client.exampleLogger
+            exampleLogger: () => root,
+        },
+        ctx: {
+            // per-interaction helper: a child logger scoped to the interaction
+            logger: (interaction) =>
+                root.child({
+                    interactionId: interaction.id,
+                }),
+        },
+        setup(client) {
+            // async startup, runs during client.start()
+            client.exampleLogger.info('logger plugin ready');
+        },
+        teardown(client) {
+            // cleanup, runs during client.close()
+            return client.exampleLogger.flush();
+        },
+    });
+}
+```
+
+After the plugin tuple is registered, commands can use both helpers:
+
+```ts title="src/commands/profile.ts"
+import { Command, type CommandContext } from 'seyfert';
+
+export default class ProfileCommand extends Command {
+    async run(ctx: CommandContext) {
+        // the per-interaction ctx helper
+        ctx.logger.info('profile opened');
+        // the app-wide client helper
+        ctx.client.exampleLogger.info('root logger is available');
+    }
+}
+```
+
+## Authoring Rules
+
+- `client` factories are synchronous and run before `setup`.
+- `ctx` factories are synchronous and run when Seyfert builds an interaction context.
+- Async startup belongs in `setup(client, api?)`; cleanup belongs in `teardown(client, api?)`. Both receive the plugin `api` as an optional second argument.
+- Declare typed client keys in `client`, not by assigning new properties inside `setup`.
+- To share a runtime object with *other* plugins instead of exposing it on `client.*`, use [shared state](/docs/plugins/building/services-and-requirements).
+- Put every plugin whose global types app code needs in the `definePlugins(...)` tuple registered via `SeyfertRegistry`.
+
+## Package Metadata
+
+Third-party plugin packages should keep `seyfert` as a peer dependency. That avoids installing a second copy beside the app. Use the Seyfert release line your plugin targets; packages written against this v5 plugin contract should target the v5 range.
+
+```json title="package.json"
+{
+    "name": "seyfert-plugin-example",
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./lib/index.d.ts",
+            "import": "./lib/index.js",
+            "require": "./lib/index.js",
+            "default": "./lib/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "peerDependencies": {
+        "seyfert": ">=5.0.0-0"
+    },
+    "devDependencies": {
+        "seyfert": ">=5.0.0-0",
+        "typescript": "^5.9.3"
+    }
+}
+```
+
+Export plugin factories from your package root. Keep public examples on root imports from `seyfert`, not `seyfert/lib/...`.

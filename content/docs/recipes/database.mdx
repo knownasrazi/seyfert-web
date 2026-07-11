@@ -1,0 +1,105 @@
+---
+title: Database Integration
+---
+
+Seyfert is database-agnostic — attach any client (Prisma, Drizzle, Mongoose, …). The idiomatic v5 way is a small **plugin** that owns the connection and exposes it as `client.db`, so every command, event, and middleware reaches the same instance with full typing — no manual `Client` augmentation. The same plugin can also hang a helper off the command context, so a command reads `await ctx.user()` to get the caller's record and its methods.
+
+## The database plugin
+
+A plugin's `client` map adds typed properties to the client; its `ctx` map adds per-interaction helpers to the command context. Open the connection in `setup` (not `register`, which is synchronous) and close it in `teardown`:
+
+```ts
+import { createPlugin } from 'seyfert';
+
+// Replace with your real client (Prisma, Drizzle, …)
+declare class DatabaseClient {
+    connect(): Promise<void>;
+    disconnect(): Promise<void>;
+    findUser(id: string): Promise<{ id: string; balance: number } | null>;
+    createUser(id: string): Promise<void>;
+    addBalance(id: string, amount: number): Promise<void>;
+}
+
+const db = new DatabaseClient();
+
+export const databasePlugin = createPlugin({
+    name: 'database',
+    client: {
+        // expose the instance as client.db
+        db: () => db,
+    },
+    ctx: {
+        // ctx.user() resolves the caller's record plus bound methods
+        user: (interaction) => async () => {
+            const { db } = interaction.client;
+            const record =
+                (await db.findUser(interaction.user.id)) ??
+                { id: interaction.user.id, balance: 0 };
+
+            return {
+                ...record, // id, balance
+                add: (amount: number) => db.addBalance(record.id, amount),
+            };
+        },
+    },
+    async setup(client) {
+        // open the connection once, before the bot starts handling anything
+        await client.db.connect();
+    },
+    async teardown(client) {
+        await client.db.disconnect();
+    },
+});
+```
+
+## Register the plugin
+
+```ts
+import { Client, definePlugins } from 'seyfert';
+import { databasePlugin } from './plugins/database';
+
+const plugins = definePlugins(databasePlugin);
+
+declare module 'seyfert' {
+    interface SeyfertRegistry { plugins: typeof plugins }
+}
+
+const client = new Client({ plugins });
+```
+
+Registering the plugin through `SeyfertRegistry` is what makes `client.db` and `ctx.user` typed everywhere.
+
+## Using it in a command
+
+`ctx.user()` is already scoped to whoever ran the command — no need to pass `ctx.author.id` around. It hands back the record's data (`balance`) and its methods (`add`):
+
+```ts
+import { Command, Declare, type CommandContext } from 'seyfert';
+
+@Declare({ name: 'balance', description: 'Check your balance' })
+export default class BalanceCommand extends Command {
+    async run(ctx: CommandContext) {
+        const user = await ctx.user();
+
+        await user.add(50); // daily bonus
+        await ctx.write({ content: `Your balance: **${user.balance}** coins` });
+    }
+}
+```
+
+In events or anywhere without a context, reach the connection directly through `client.db`:
+
+```ts
+import { createEvent } from 'seyfert';
+
+export default createEvent({
+    data: { name: 'guildMemberAdd' },
+    async run(member, client) {
+        await client.db.createUser(member.id);
+    },
+});
+```
+
+<Callout type="info">
+The `ctx` factory runs **synchronously** before `run()`, so `ctx.user` returns a *function* — the `await ctx.user()` call is what does the async lookup, fresh each time. `ctx.author` is still the Discord user; `ctx.user()` is your database helper.
+</Callout>

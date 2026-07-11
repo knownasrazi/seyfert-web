@@ -1,0 +1,10 @@
+{
+    "root": true,
+    "title": "Plugins",
+    "icon": "Plug",
+    "pages": [
+        "index",
+        "official",
+        "building"
+    ]
+}

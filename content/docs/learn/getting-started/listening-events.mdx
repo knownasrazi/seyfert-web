@@ -1,0 +1,138 @@
+---
+title: Listening to Events
+---
+import { Files, File, Folder } from '@/components/ui/fileTree.tsx';
+
+<Callout>
+This section is relevant only for **gateway**-based applications.  
+If your bot is built exclusively as an HTTP application, you can skip this section.
+</Callout>
+
+### Updating Seyfert's Configuration
+
+Before starting this section, you need to update the `seyfert.config.mjs` file to specify the location of the event files for Seyfert.
+
+```ts twoslash title="seyfert.config.mjs" copy wrap
+import { config } from 'seyfert';
+
+export default config.bot({
+    token: process.env.BOT_TOKEN ?? '',
+    intents: ['Guilds'],
+    locations: {
+        base: 'dist',
+        commands: 'commands',
+        events: 'events' // - src/events will be our folder for events [!code highlight]
+    }
+});
+```
+
+## Listening to Events
+
+Each event file must export the `createEvent` function as the default export so Seyfert can load it.  
+The `createEvent` function takes an object with two properties: `data` and `run`.
+
+Let's listen to the `botReady` event as the first example:
+
+```ts twoslash title="src/events/botReady.ts" showLineNumbers
+import { createEvent } from 'seyfert';
+
+export default createEvent({
+  // botReady is triggered when all shards and servers are ready.
+  // `once` ensures the event runs only once.
+  data: { once: true, name: 'botReady' },
+  run(user, client) {
+
+    //  We can use client.logger to display messages in the console.
+    client.logger.info(`${user.username} is ready`);
+
+  }
+})
+```
+
+As a second example, let's look at the `guildDelete` event emitted by Discord when a bot is removed from a server or the server is deleted:
+
+```ts twoslash title="src/events/guildDelete.ts" showLineNumbers wrap
+import { createEvent } from 'seyfert';
+
+export default createEvent({
+  data: { name: 'guildDelete' },
+  run(unguild, client) {
+    // unguild is the server from which the bot was removed or deleted.
+    // It is also possible that the server was simply deleted.
+    if (unguild.unavailable) return;
+
+    client.logger.info(`I was removed from: ${unguild.id}`);
+  }
+})
+```
+
+After completing these steps, your project structure should look like this:
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="commands">
+      <File name="ping.ts" />
+    </Folder>
+    <Folder name="events">
+      <File name="botReady.ts" />
+      <File name="guildDelete.ts" />
+    </Folder>
+    <File name="index.ts" />
+  </Folder>
+  <File name="package.json" />
+  <File name="seyfert.config.mjs" />
+  <File name="tsconfig.json" />
+  <File name=".env" />
+</Files>
+
+## Custom Events
+
+Beyond Discord's gateway events, Seyfert lets you declare, load, and fire your own custom events that can be called anywhere in your code. For this example we create a simple event named `ourEvent`.
+
+<Callout title="Module augmentation">
+This section relies on [module augmentation](/docs/learn/getting-started/declare-module), we recommend reading it first.
+</Callout>
+
+<Callout title="Overwriting events">
+If two events have the same name, they will be overwritten.
+</Callout>
+
+First we need to let Seyfert's typing system know that we will have a custom event.
+
+```ts title="index.ts"
+declare module "seyfert" {
+	interface CustomEvents {
+		ourEvent: (text: string) => void;
+	}
+}
+```
+
+### Loading the event
+
+Place your events in the folder declared in `seyfert.config` and Seyfert loads them automatically.
+
+```ts
+import { createEvent } from 'seyfert';
+
+export default createEvent({
+	data: { name: "ourEvent", once: false },
+	run: (text) => {
+		console.log(text);
+	}
+});
+```
+
+### Executing the event
+
+```ts title="index.ts"
+import { Client } from "seyfert";
+
+const client = new Client();
+
+(async () => {
+	await client.start();
+	client.events?.runCustom('ourEvent', 'Hello, world!');
+})();
+```
+
+After running the code, you should see `Hello, world!` in the console.

@@ -1,0 +1,13 @@
+{
+    "title": "Components",
+    "icon": "Boxes",
+    "defaultOpen": true,
+    "pages": [
+        "building-components",
+        "handling-components",
+        "modals",
+        "collectors",
+        "polls",
+        "v2"
+    ]
+}

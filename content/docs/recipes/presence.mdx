@@ -1,0 +1,94 @@
+---
+title: Setting Custom Activity and Presence
+---
+
+## Customizing Your Bot’s Presence and Activity
+
+With Seyfert you can set your bot’s activity and presence during client initialization or update them dynamically while the bot is running.
+
+### Setting Presence During Client Initialization
+
+The most straightforward way to define your bot’s status and activity is during client initialization. Below is an example of setting the bot's presence:
+
+```ts twoslash title="src/index.ts" showLineNumbers wrap
+import { Client } from "seyfert";
+import { ActivityType, PresenceUpdateStatus } from 'seyfert';
+
+const client = new Client({
+    presence: (shardId) => ({
+        status: PresenceUpdateStatus.Idle,
+        activities: [{
+            name: "your servers",
+            type: ActivityType.Watching,
+        }],
+        since: Date.now(),
+        afk: false,
+    })
+});
+```
+
+### Rendering the Bot as "Mobile"
+
+To display your bot as if it’s running on a mobile device, you can specify custom gateway properties. Here’s how:
+
+```ts twoslash showLineNumbers wrap
+import { Client } from "seyfert";
+import { ActivityType, GatewayPresenceUpdateData, PresenceUpdateStatus } from 'seyfert';
+// ---cut---
+const client = new Client({
+    gateway: {
+        properties: {
+            os: 'android',
+            browser: 'Discord Android',
+            device: 'android'
+        }
+    },
+    presence: (shardId) => ({
+        status: PresenceUpdateStatus.Idle,
+        activities: [{
+            name: "your servers",
+            type: ActivityType.Watching,
+        }],
+        since: Date.now(),
+        afk: false,
+    })
+});
+```
+
+#### Important Notes:
+- **`gateway.properties`**: Defines the operating system, browser, and device to emulate. When set to mimic a mobile device (e.g., `os: 'android'`), the bot will appear with a mobile icon.
+- **Avoiding `status`**: If you set the `status` property explicitly, the mobile icon will not be rendered. For example, leaving `status` undefined allows the mobile icon to appear.
+
+### Dynamically Updating Presence
+
+Once the bot is running, you can dynamically update its presence by creating a command to handle presence updates. This is particularly useful when the update is triggered by user interaction or other events:
+
+```ts twoslash title="src/commands/presence.ts" showLineNumbers wrap
+import type { ParseClient, Client } from 'seyfert';
+declare module 'seyfert' {
+  interface SeyfertRegistry { client: ParseClient<Client<true>> }
+}
+// ---cut---
+import { Command, Declare, GuildCommandContext } from "seyfert";
+import { ActivityType, PresenceUpdateStatus } from 'seyfert';
+
+@Declare({
+    name: 'presence',
+    description: 'Change bot presence'
+})
+export default class PresenceCommand extends Command {
+    async run(ctx: GuildCommandContext) {
+        ctx.client.gateway.setPresence({
+            activities: [{
+                name: "with Seyfert",
+                type: ActivityType.Playing,
+            }],
+            status: PresenceUpdateStatus.Online,
+            since: Date.now(),
+            afk: false
+        });
+
+        await ctx.editOrReply({ content: 'Switched Presence' });
+    }
+}
+```

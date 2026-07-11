@@ -1,0 +1,333 @@
+---
+title: Cache
+---
+# What is cache?
+
+Cache is a temporary storage layer that keeps frequently accessed data readily available for quick access. In Seyfert, the cache system stores Discord data in memory by default, though it can be configured to use other storage solutions like Redis.
+
+## Resources
+
+All entities supported by Seyfert's cache are `resources`, such as `channels`, `users`, `members`, etc. Each of these resources is managed in the same way, but they can be modified and handled differently depending on the `Adapter`.
+
+### Disabling
+
+Seyfert allows you to disable these `resources` separately.
+
+<Callout title="Global Data">
+In Seyfert, the cache is global, meaning everything is stored in the same resource, with no distinction between guilds, until they are retrieved, at which point you would need to specify the source.
+</Callout>
+
+| Resource         | Elements                                              |
+|-----------------|--------------------------------------------------------|
+| channels        | TextChannel, DMChannel, VoiceChannel, ThreadChannel... |
+| bans            | GuildBan                                               |
+| emojis          | Emoji                                                  |
+| guilds          | Guild                                                  |
+| messages        | Message                                                |
+| overwrites      | PermissionsOverwrites                                  |
+| presences       | Presence                                               |
+| members         | GuildMember                                            |
+| roles           | GuildRole                                              |
+| users           | User                                                   |
+| stickers        | Sticker                                                |
+| voiceStates     | VoiceStates                                            |
+| stageInstances  | StageChannel                                           |
+
+```ts twoslash
+import { Client } from 'seyfert';
+
+const client = new Client();
+
+client.setServices({ cache: { disabledCache: { bans: true } } })
+```
+The example above disables the bans cache, and that resource would not exist at runtime.
+
+<Callout title="Disabling Gateway Writes">
+You can stop gateway packets from writing data into the cache:
+```ts twoslash
+import { Client } from 'seyfert';
+
+const client = new Client();
+// ---cut---
+client.setServices({ cache: { disabledCache: { onPacket: true } } })
+```
+</Callout>
+
+### Filtering
+
+You can filter which data gets stored in a resource. For example, if your application doesn't need to cache DM channels, you can filter them out:
+
+```ts twoslash title="index.ts" copy showLineNumbers
+import { Client } from "seyfert";
+import { type APIChannel, ChannelType } from "seyfert";
+const client = new Client();
+
+client.cache.channels!.filter = (
+    channel,
+    id,
+    guildId,
+) => {
+    return ![
+        ChannelType.DM,
+        ChannelType.GroupDM
+    ].includes(channel.type);
+};
+```
+
+## Adapters
+
+Seyfert allows you to provide your own adapter for the cache, which you can think of as a driver to let Seyfert use an unsupported tool. By default, Seyfert includes `MemoryAdapter` and `LimitedMemoryAdapter`, both of which operate in RAM. Additionally, Seyfert has official Redis support through the [`Redis Adapter`](https://github.com/tiramisulabs/extra/tree/main/packages/redis-adapter).
+
+<Callout title="Difference between MemoryAdapter and LimitedMemoryAdapter">
+The `MemoryAdapter` stores all data in memory, while the `LimitedMemoryAdapter` limits the amount of data stored in memory by providing expiration times and limits of entries.
+</Callout>
+
+## LimitedCollection
+
+Seyfert also ships a `LimitedCollection`, a TTL-based key-value collection handy for temporary data outside the resource cache:
+
+```ts twoslash
+import { LimitedCollection } from 'seyfert';
+
+const cache = new LimitedCollection<string, { score: number }>();
+
+// Set with auto-expiry (3rd argument is TTL in ms)
+cache.set('user-123', { score: 42 }, 60_000); // Expires in 60s
+
+// Get (returns undefined if expired)
+const item = cache.get('user-123');
+
+// Check existence
+cache.has('user-123');
+```
+
+## Building Your Own Cache
+
+### Custom Resource
+
+A `custom resource` is just a new cache entity, so integrating it is relatively simple. Let's take the example of the [Cooldown](https://github.com/tiramisulabs/extra/blob/main/packages/cooldown/src/resource.ts) resource from the [cooldown](/docs/plugins/official/cooldown) package.
+
+It's important to note that Seyfert provides a base for three types of resources:
+
+- **BaseResource**: a basic entity, which should be completely independent
+- **GuildBasedResource**: an entity linked to a guild (like bans)
+- **GuildRelatedResource**: an entity that may or may not be linked to a guild (like messages)
+
+```ts title="resource.ts"
+import { BaseResource, CacheFrom } from 'seyfert';
+
+interface CooldownData {
+    id: string;
+    lastDrip: number;
+}
+
+type CooldownInput = Omit<CooldownData, 'lastDrip'> & Partial<Pick<CooldownData, 'lastDrip'>>;
+
+export class CooldownResource extends BaseResource<CooldownData, CooldownInput> {
+    // The namespace is the base that separates each resource
+    namespace = 'cooldowns';
+
+    // We override set to apply the typing and format we want
+    override set(from: CacheFrom, id: string, data: CooldownInput) {
+        return super.set(from, id, { ...data, lastDrip: data.lastDrip ?? Date.now() });
+    }
+}
+```
+Note that a custom resource is for developer use; Seyfert will not interact with it unless specified in the application's code.
+
+```ts
+import { Client, type ParseClient } from 'seyfert';
+import { CooldownResource } from './resource'
+
+const client = new Client();
+
+client.cache.cooldown = new CooldownResource(client.cache, client);
+
+declare module "seyfert" {
+    interface Cache {
+        cooldown: CooldownResource;
+    }
+    interface SeyfertRegistry { client: ParseClient<Client> }
+}
+```
+
+## Custom Adapter
+
+Don't like storing the cache in memory or Redis? Implement the `Adapter` interface to back the cache with anything you like.
+
+If your adapter is asynchronous, set `isAsync = true` and return promises from its methods (a synchronous adapter simply returns values directly). The `start` method runs once before the bot starts and may always be async.
+
+Seyfert's cache stores **values** keyed by a dotted path, plus **relationships** (sets of IDs) so it can tell who a resource belongs to. Keys look like this:
+
+```ts
+<resource>.<id2>.<id1> // member.1003825077969764412.1095572785482444860
+<resource>.<id1>       // user.863313703072170014
+```
+
+### Implementing the Adapter interface
+
+Below is a complete async skeleton backed by an imaginary `storage` driver. Methods are grouped by purpose; the `bulk*` variants just loop over their single-item counterparts, and `keys`/`values`/`count`/`contains` derive from a relationship.
+
+```ts twoslash
+interface SeyfertDotDev {
+    set(key: string, value: any): Promise<void>;
+    get(key: string): Promise<any>;
+    remove(key: string): Promise<void>;
+    flush(): Promise<void>;
+    entries(): Promise<[string, unknown][]>;
+    setAdd(to: string, key: string): Promise<void>;
+    setGet(key: string): Promise<string[] | undefined>;
+    setPull(to: string, key: string[]): Promise<void>;
+    setRemove(key: string): Promise<void>;
+    setFlush(): Promise<void>;
+}
+// @noErrors
+// ---cut---
+import { Adapter } from 'seyfert';
+
+class MyAdapter implements Adapter {
+    // ---cut-start---
+    storage: SeyfertDotDev;
+    // ---cut-end---
+    isAsync = true;
+
+    async start() {
+        // Runs before the bot starts
+    }
+
+    // --- Storing values ---
+    async set(key: string, value: any | any[]) {
+        await this.storage.set(key, { value });
+    }
+
+    async bulkSet(keys: [string, any][]) {
+        for (const [key, value] of keys) await this.set(key, value);
+    }
+
+    // patch only overwrites the properties you pass, not the whole value
+    async patch(key: string, value: any | any[]) {
+        const oldData = await this.storage.get(key) ?? {};
+        const newValue = Array.isArray(value) ? value : { ...oldData, ...value };
+        await this.storage.set(key, { value: newValue });
+    }
+
+    async bulkPatch(keys: [string, any][]) {
+        for (const [key, value] of keys) await this.patch(key, value);
+    }
+
+    // --- Retrieving values ---
+    async get(key: string) {
+        return this.storage.get(key);
+    }
+
+    async bulkGet(keys: string[]) {
+        const values = await Promise.all(keys.map(key => this.get(key)));
+        return values.filter(value => value); // drop nulls
+    }
+
+    // --- Storing/removing relationships (sets of unique IDs) ---
+    async addToRelationship(id: string, keys: string | string[]) {
+        for (const key of Array.isArray(keys) ? keys : [keys]) {
+            await this.storage.setAdd(id, key);
+        }
+    }
+
+    async bulkAddToRelationShip(data: Record<string, string[]>) {
+        for (const i in data) await this.addToRelationship(i, data[i]);
+    }
+
+    async getToRelationship(to: string) {
+        return await this.storage.setGet(to) ?? [];
+    }
+
+    async removeToRelationship(to: string, key: string | string[]) {
+        await this.storage.setPull(to, Array.isArray(key) ? key : [key]);
+    }
+
+    async removeRelationship(to: string | string[]) {
+        for (const target of Array.isArray(to) ? to : [to]) {
+            await this.storage.setRemove(target);
+        }
+    }
+
+    // Derived helpers built on get + getToRelationship
+    async keys(to: string) {
+        return (await this.getToRelationship(to)).map(key => `${to}.${key}`);
+    }
+
+    async values(to: string) {
+        const values = await Promise.all((await this.keys(to)).map(key => this.get(key)));
+        return values.filter(value => value);
+    }
+
+    async count(to: string) {
+        return (await this.getToRelationship(to)).length;
+    }
+
+    async contains(to: string, key: string) {
+        return (await this.getToRelationship(to)).includes(key);
+    }
+
+    // --- Deleting ---
+    async remove(key: string) {
+        await this.storage.remove(key);
+    }
+
+    async bulkRemove(keys: string[]) {
+        for (const key of keys) await this.remove(key);
+    }
+
+    async flush() {
+        await this.storage.flush();    // values
+        await this.storage.setFlush(); // relationships
+    }
+
+    // --- scan: see below ---
+    async scan(query: string, keys?: false): any[];
+    async scan(query: string, keys: true): string[];
+    async scan(query: string, keys = false) {
+        const values: (string | unknown)[] = [];
+        const sq = query.split('.');
+        for (const [key, value] of await this.storage.entries()) {
+            const match = key.split('.')
+                .every((part, i) => (sq[i] === '*' ? !!part : sq[i] === part));
+            if (match) values.push(keys ? key : value);
+        }
+        return values;
+    }
+}
+```
+
+#### The `scan` method
+
+`scan` is the one non-trivial method. It takes a query matching the dotted key format, where `*` means "any ID":
+
+```ts
+<resource>.<*>.<*> // member.*.*
+<resource>.<*>.<id> // member.*.1095572785482444860
+<resource>.<id>.<*> // member.1003825077969764412.*
+<resource>.<*> // user.*
+```
+
+It must return every match (values, or keys when the second argument is `true`). The skeleton above iterates over all entries, which works but is slow; a real backend should push the matching down into the store, like our Redis adapter does.
+
+> [Example of Redis Adapter](https://github.com/tiramisulabs/extra/blob/db36914ace5f4b948ee109a3c25987e162811b44/packages/redis-adapter/src/adapter.ts#L46)
+
+### Testing
+To ensure your adapter works, run the `testAdapter` method from `Cache`.
+
+```ts twoslash
+// @errors: 2304
+// @noErrors
+import { Client } from 'seyfert';
+
+const client = new Client();
+
+client.setServices({
+    cache: {
+        adapter: new MyAdapter()
+    }
+})
+
+await client.cache.testAdapter();
+```

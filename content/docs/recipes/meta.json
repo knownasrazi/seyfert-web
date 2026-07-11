@@ -1,0 +1,21 @@
+{
+    "title": "Recipes",
+    "icon": "BookOpen",
+    "defaultOpen": false,
+    "pages": [
+        "sending-messages",
+        "embeds-and-formatting",
+        "presence",
+        "cache",
+        "database",
+        "logger",
+        "sharding",
+        "hot-reload",
+        "eslint",
+        "api-access",
+        "music",
+        "monetization",
+        "cloudflare-workers",
+        "using-docker"
+    ]
+}

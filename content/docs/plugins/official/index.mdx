@@ -1,0 +1,48 @@
+---
+title: Official Plugins
+description: Packages maintained by the Seyfert team — plugins, adapters, and utilities.
+---
+
+The Seyfert team maintains a set of official packages under the `@slipher` scope. They fall into three categories:
+
+- **Plugins** — installed through `new Client({ plugins })` and composed by the client.
+- **Adapters** — swap a piece of infrastructure (cache, HTTP server, REST, gateway).
+- **Utilities** — helpers you import and call directly; no plugin lifecycle.
+
+A plugin can use adapters and utilities internally — they only become "installed" when you pass a plugin object to the `plugins` option.
+
+## Plugins
+
+Each of these has its own guide.
+
+| Package | What it does |
+| --- | --- |
+| [`@slipher/cooldown`](/docs/plugins/official/cooldown) | Per-command rate limits by user, guild, channel, or globally. |
+| [`@slipher/scheduler`](/docs/plugins/official/scheduler) | Cron and interval jobs managed from the Seyfert lifecycle. |
+| [`@slipher/logger`](/docs/plugins/official/logger) | Structured, request-aware logging with pluggable backends. |
+| [`@slipher/opentelemetry`](/docs/plugins/official/opentelemetry) | Automatic traces and duration metrics for interactions, events, Discord REST, and cache operations. |
+| [`@slipher/queues`](/docs/plugins/official/queues) | Background job queues with producers and processors. |
+| [`yunaforseyfert`](/docs/plugins/official/yuna) | Advanced prefix/text command parser: named options, dynamic prefixes, and watchers. |
+
+## Adapters
+
+| Package | Replaces | Install |
+| --- | --- | --- |
+| `@slipher/redis-adapter` | Cache (distributed, Redis-backed) | `pnpm add @slipher/redis-adapter` |
+| `@slipher/uws-adapter` | HTTP server (uWebSockets.js) | `pnpm add @slipher/uws-adapter` |
+| `@slipher/generic-adapter` | HTTP server (webhook-based bots) | `pnpm add @slipher/generic-adapter` |
+| `@slipher/proxy` | REST proxy | `pnpm add @slipher/proxy` |
+
+## Utilities
+
+| Package | What it does | Install |
+| --- | --- | --- |
+| `@slipher/webhooks` | Discord webhook event handling | `pnpm add @slipher/webhooks` |
+| `@slipher/watcher` | Hot-reload for development | `pnpm add -D @slipher/watcher` |
+| `@slipher/testing` | Test fixtures and helpers for Seyfert apps | `pnpm add -D @slipher/testing` |
+| [`@slipher/scaler (WIP)`](/docs/plugins/official/scaler) | Discover hosts, place gateway workers, and redistribute them live. | Unreleased |
+| [`@slipher/chartjs`](/docs/plugins/official/chartjs) | Render Chart.js charts to images for message attachments. | `pnpm add @slipher/chartjs` |
+
+## Building your own
+
+These packages are practical references for the authoring API. When you're ready to write one, start with [Creating Plugins](/docs/plugins/building/creating-plugins).

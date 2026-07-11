@@ -1,0 +1,175 @@
+---
+title: Runtime Registration
+---
+
+`register(api)` is synchronous. It declares what the plugin contributes to Seyfert.
+
+```ts
+import { createPlugin } from 'seyfert';
+import HealthCommand from './commands/health';
+import RefreshButton from './components/refresh-button';
+import ProfileModal from './modals/profile-modal';
+import { auditService } from './audit-service';
+import { auditMiddleware } from './middlewares/audit';
+
+export const auditPlugin = createPlugin({
+    name: 'audit-plugin',
+    client: {
+        // expose the service as client.audit
+        audit: () => auditService,
+    },
+    register(api) {
+        // contribute a command, component, and modal
+        api.commands.add(HealthCommand);
+        api.components.add(RefreshButton);
+        api.modals.add(ProfileModal);
+        // register a named middleware and make it global
+        api.middlewares.add('audit', auditMiddleware, { global: true });
+
+        // listen for an event the framework emits
+        api.events.on('commandsLoaded', (metadata) => {
+            auditService.recordCommandsLoaded(metadata);
+        });
+
+        // contribute a partial client options fragment
+        api.options.set({
+            allowedMentions: { parse: [] },
+        });
+    },
+});
+```
+
+Do not return a promise from `register(api)`. Open connections in `setup`, not in `register`.
+
+## Commands, Components, and Modals
+
+Plugin commands load after disk commands. Plugin components and modals load after disk components.
+
+```ts
+register(api) {
+    // add a command, a component, and a modal
+    api.commands.add(HealthCommand);
+    api.components.add(RefreshButton);
+    api.modals.add(ProfileModal);
+}
+```
+
+Conflicts are attributed errors:
+
+- duplicate command names fail
+- duplicate static component or modal custom IDs fail
+- subcommands are not top-level plugin commands
+
+## Events
+
+Plugins can listen to client, gateway, and custom events.
+
+```ts
+register(api) {
+    // listen every time the event fires
+    api.events.on('botReady', (user, client) => {
+        client.logger.info(`${user.username} is online`);
+    });
+
+    // listen only the first time it fires
+    api.events.once('commandsLoaded', (metadata) => {
+        auditService.recordCommandSources(metadata.plugin.sources);
+    });
+
+    // observe every event by name
+    api.events.onAny((name) => {
+        auditService.recordEvent(name);
+    });
+}
+```
+
+Plugin listeners are additive. Multiple plugins can observe the same event, and a listener failure is wrapped with the plugin name and phase without skipping the other listeners.
+
+To emit a custom event, use the client (`client.events.emit(...)`) once the event runner exists — from `setup`, a plugin listener, or a runtime callback. The registration `api` does not expose `emit`, because `register(api)` runs before events are bound. Gateway event names cannot be emitted from plugins.
+
+## Loaded Metadata
+
+`commandsLoaded` and `componentsLoaded` receive metadata, not a raw array.
+
+```ts
+api.events.on('commandsLoaded', (metadata) => {
+    metadata.kind; // "commands"
+    metadata.total; // all loaded commands
+    metadata.items; // loaded command objects
+    metadata.plugin.total; // plugin-contributed commands
+    metadata.plugin.sources; // count by plugin name
+});
+```
+
+The same shape is used for components with `kind: "components"`.
+
+## Middlewares
+
+`api.middlewares.add(...)` registers a named middleware. `{ global: true }` also contributes the middleware name to `globalMiddlewares`.
+
+```ts
+register(api) {
+    // global: true also adds it to globalMiddlewares
+    api.middlewares.add('audit', auditMiddleware, { global: true });
+}
+```
+
+Duplicate middleware names fail.
+
+If a command references a middleware name that is not registered, Seyfert warns and continues with the registered middlewares that are available.
+
+For public packages, type middleware contributions on the plugin so app code can use `Middlewares([...])` without extra casts.
+
+```ts
+import { createPlugin, type CommandContext, type MiddlewareContext, type SeyfertPlugin } from 'seyfert';
+
+type AuthMiddleware = MiddlewareContext<{ userId: string }, CommandContext>;
+
+const auth: AuthMiddleware = ({ next }) => next({ userId: '1' });
+
+// type the middleware contribution so app code stays cast-free
+export const authPlugin: SeyfertPlugin<{}, {}, readonly [], { auth: AuthMiddleware }> = createPlugin({
+    name: 'auth',
+    register(api) {
+        api.middlewares.add('auth', auth);
+    },
+});
+```
+
+When the app includes that plugin in the tuple registered via `SeyfertRegistry`, `Middlewares(['auth'])` and `ctx.metadata.auth` are typed.
+
+## Option Fragments
+
+`api.options.set(...)` contributes partial client options.
+
+```ts
+register(api) {
+    // contribute default command hooks; they compose with the app's
+    api.options.set({
+        commands: {
+            defaults: {
+                onRunError(ctx, error) {
+                    ctx.client.logger.error(error);
+                },
+            },
+        },
+    });
+}
+```
+
+Plugin option fragments are composed before final user options. Plain option values can still be overridden by app configuration through normal option merging. Command, component, and modal default hooks are composed, so plugin hooks and app hooks both run instead of one replacing the other.
+
+Use `options(current)` when the fragment depends on options already composed before your plugin:
+
+```ts
+export const plugin = createPlugin({
+    name: 'mentions',
+    // read options already composed before this plugin
+    options(current) {
+        return {
+            // only set a default when the app didn't provide one
+            allowedMentions: current.allowedMentions ?? { parse: [] },
+        };
+    },
+});
+```

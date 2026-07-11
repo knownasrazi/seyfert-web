@@ -1,0 +1,9 @@
+{
+    "title": "Tips & Reference",
+    "icon": "Lightbulb",
+    "defaultOpen": true,
+    "pages": [
+        "structures",
+        "intents"
+    ]
+}

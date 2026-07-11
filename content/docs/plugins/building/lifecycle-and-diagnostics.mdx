@@ -1,0 +1,124 @@
+---
+title: Lifecycle and Diagnostics
+---
+
+Plugin lifecycle has three different jobs:
+
+- `register(api)` declares contributions synchronously.
+- `setup(client, api?)` starts async resources during `client.start()`.
+- `teardown(client, api?)` cleans those resources through `client.close()`.
+
+Both `setup` and `teardown` receive an optional second `api` argument. During teardown it is a read-only view (`has`, `diagnostics`, `shared.has`) — teardown inspects and reports, it does not mutate contributions.
+
+```ts
+export function schedulerPlugin(options: SchedulerOptions) {
+    const registry = new SchedulerRegistry(options);
+
+    return createPlugin({
+        name: 'scheduler',
+        client: {
+            // app-wide helper: client.scheduler
+            scheduler: () => registry,
+        },
+        ctx: {
+            // per-interaction helper: ctx.scheduler
+            scheduler: () => registry,
+        },
+        setup(client) {
+            // start async resources during client.start()
+            return client.scheduler.setup(client);
+        },
+        teardown(client) {
+            // release them during client.close()
+            return client.scheduler.close();
+        },
+    });
+}
+```
+
+## Startup Order
+
+During client construction, Seyfert resolves plugins, validates static keys and requirements, runs `register(api)`, merges plugin option fragments, and binds the client, context, and shared registries.
+
+During the plugin-loading part of `client.start()`:
+
+1. plugin setup runs
+2. cache adapter starts
+3. languages load
+4. disk commands load
+5. plugin commands apply
+6. `commandsLoaded` emits
+7. disk components load
+8. plugin components and modals apply
+9. `componentsLoaded` emits
+
+For `Client`, disk event files load after this sequence, before gateway execution.
+
+`setup` can use client helpers declared by its own plugin and imported plugins.
+
+## Close Behavior
+
+`client.close()` waits for in-flight setup and then runs plugin `teardown` in reverse resolved order.
+
+If setup fails after some plugins already completed, Seyfert tears down the completed plugins. If teardown fails, errors are aggregated.
+
+`client.close()` handles plugin resources. It does not close the gateway, REST client, or cache adapter for you.
+
+## Diagnostics
+
+`client.plugins` is the resolved plugin list. It also exposes diagnostics:
+
+```ts
+// walk the resolved plugins' diagnostics
+for (const diagnostic of client.plugins.diagnostics) {
+    client.logger.info(diagnostic.name, diagnostic.status);
+}
+```
+
+Each plugin diagnostic includes:
+
+- `name`
+- `index`
+- `status`
+- `imports`
+- `clientKeys`
+- `ctxKeys`
+- contribution counts for commands, components, modals, wrappers, and shared values
+- event and middleware names
+- requirement results
+- warnings
+
+Lifecycle status can be `registered`, `setting-up`, `ready`, `closing`, `closed`, or `failed`.
+
+## Attributed Errors
+
+Plugin failures are wrapped as `SeyfertPluginError`.
+
+```ts
+try {
+    await client.start();
+} catch (error) {
+    // plugin failures surface as SeyfertPluginError
+    if (error instanceof Error && error.name === 'SeyfertPluginError') {
+        client.logger.error(error);
+    }
+}
+```
+
+The wrapped error records:
+
+- plugin name
+- lifecycle or runtime phase
+- resolved plugin index
+- original error as `cause`
+
+Common phases include `register`, `options`, `client`, `ctx`, `shared`, `commands.add`, `components.add`, `setup`, `teardown`, `gateway.wrapSendPayload`, and `event:<name>`.
+
+## What Is Not A Plugin API
+
+There is no shipped `dependsOn`, numeric priority, or `PluginEnforce` API in this contract. Use:
+
+- `imports` for plugins your plugin brings with it
+- `requires` for dependency validation
+- `api.has(...)` for feature checks
+- shared state for shared runtime objects

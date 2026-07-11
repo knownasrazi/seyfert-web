@@ -1,0 +1,70 @@
+---
+title: Docker
+description: An introduction on how to deploy Seyfert in a Docker container
+---
+
+This guide shows how to containerize a Seyfert bot with a multi-stage [Docker](https://www.docker.com/) build.
+
+## What files does a Seyfert project require?
+
+- `package.json`
+- `seyfert.config.mjs`
+- `/node_modules`
+- `/src` or `/dist`
+
+## Container file with multi-stage builds
+
+The following multi-stage `Dockerfile` builds your TypeScript sources and ships a minimal production image. Replace `<VERSION_TAG>` with the Node.js version you want to use.
+
+```docker title="Dockerfile" copy
+# [ base ] #
+FROM node:<VERSION_TAG>-alpine AS base
+
+ENV DIR /bot
+WORKDIR $DIR
+
+# [ OS packages ] #
+FROM base AS pkg
+
+RUN apk update && apk add --no-cache dumb-init
+
+# [ project builder ] #
+FROM base AS build
+
+COPY package*.json ./
+
+## Ref: https://docs.npmjs.com/cli/v10/commands/npm-ci
+RUN npm ci
+## Ref: https://docs.npmjs.com/cli/v10/commands/npm-prune
+RUN npm prune --production
+
+RUN npm i -g typescript
+
+COPY tsconfig.json seyfert.config.mjs ./
+COPY /src ./src
+
+## Build typescript
+RUN tsc --project tsconfig.json
+
+# [ production ready ] #
+FROM base AS production
+
+# Joining stages
+## Packages
+COPY --from=pkg /usr/bin/dumb-init /usr/bin/dumb-init
+## Dependencies
+COPY --from=build $DIR/node_modules ./node_modules
+## Builder
+COPY --from=build $DIR/dist ./dist
+COPY --from=build $DIR/package.json ./package.json
+COPY --from=build $DIR/seyfert.config.mjs ./seyfert.config.mjs
+
+# Environment permissions
+ENV NODE_ENV production
+## Remove if your project needs root permissions
+ENV USER node
+USER $USER
+
+# Run the application
+ENTRYPOINT ["dumb-init", "node", "dist/index.js"]
+```

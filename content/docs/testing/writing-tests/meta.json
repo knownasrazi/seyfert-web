@@ -1,0 +1,13 @@
+{
+    "title": "Writing Tests",
+    "icon": "ListChecks",
+    "defaultOpen": true,
+    "pages": [
+        "setup",
+        "commands",
+        "events",
+        "components",
+        "modals",
+        "unit-tests"
+    ]
+}

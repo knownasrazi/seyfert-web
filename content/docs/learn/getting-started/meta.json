@@ -1,0 +1,12 @@
+{
+    "title": "Getting Started",
+    "icon": "Rocket",
+    "defaultOpen": true,
+    "pages": [
+        "index",
+        "setup-project",
+        "first-command",
+        "listening-events",
+        "declare-module"
+    ]
+}

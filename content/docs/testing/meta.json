@@ -1,0 +1,10 @@
+{
+    "root": true,
+    "title": "Testing",
+    "icon": "FlaskConical",
+    "pages": [
+        "index",
+        "writing-tests",
+        "toolkit"
+    ]
+}
